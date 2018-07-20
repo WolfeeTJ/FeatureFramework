@@ -1,0 +1,3 @@
+datasource	month_col	key_col	start_month	end_month	exclude_col
+MD_MTH_DATA	month_nbr	customer	1	10	amt5
+ANOTHER_FILE	m1	c1	2	8	a5

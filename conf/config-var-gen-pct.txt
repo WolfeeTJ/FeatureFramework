@@ -1,0 +1,3 @@
+datasource	var_combinations	month_start	month_end	month_combinations	where
+MD_MTH_DATA	amt2, amt3, amt4	7	12	1,3,6	
+ANOTHER_FILE	a2,a3,a4	3	12	1,3	
