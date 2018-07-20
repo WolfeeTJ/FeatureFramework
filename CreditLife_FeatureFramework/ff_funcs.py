@@ -146,16 +146,16 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
         else:
             return x[x.isna()].size / x.size;
 
-    agg_funcs = [(in_stat_column_name + "_cnt", np.size),
-                 (in_stat_column_name + "_cnt_gt_0", cnt_gt_0),
-                 (in_stat_column_name + "_pct_gt_0", pct_gt_0),
-                 (in_stat_column_name + "_sum", np.sum),
-                 (in_stat_column_name + "_min", np.min),
-                 (in_stat_column_name + "_max", np.max),
-                 (in_stat_column_name + "_avg", np.average),
-                 (in_stat_column_name + "_med", np.median),
-                 (in_stat_column_name + "_cnt_isna", cnt_isna),
-                 (in_stat_column_name + "_pct_isna", pct_isna)
+    agg_funcs = [(in_stat_column_name + "_cnt_L" + str(in_N_month), np.size),
+                 (in_stat_column_name + "_cnt_gt_0_L" + str(in_N_month), cnt_gt_0),
+                 (in_stat_column_name + "_pct_gt_0_L" + str(in_N_month), pct_gt_0),
+                 (in_stat_column_name + "_sum_L" + str(in_N_month), np.sum),
+                 (in_stat_column_name + "_min_L" + str(in_N_month), np.min),
+                 (in_stat_column_name + "_max_L" + str(in_N_month), np.max),
+                 (in_stat_column_name + "_avg_L" + str(in_N_month), np.average),
+                 (in_stat_column_name + "_med_L" + str(in_N_month), np.median),
+                 (in_stat_column_name + "_cnt_isna_L" + str(in_N_month), cnt_isna),
+                 (in_stat_column_name + "_pct_isna_L" + str(in_N_month), pct_isna)
                  ]
     df_result = in_dataframe.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
 
@@ -226,15 +226,15 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
             in_time_interval_column_name + " >= " + str(
                 in_end_month - 2) + " and " + in_time_interval_column_name + " <=" + str(in_end_month))
 
-    df_agg[in_stat_column_name + "_1/N_sum"] = df_agg["#sum_curr"] / df_agg["#sum"]
-    df_agg[in_stat_column_name + "_1/N_max"] = df_agg["#max_curr"] / df_agg["#max"]
-    df_agg[in_stat_column_name + "_1/N_avg"] = df_agg["#avg_curr"] / df_agg["#avg"]
-    df_agg[in_stat_column_name + "_2h/N_sum"] = df_agg["#sum_2nd_half"] / df_agg["#sum"]
-    df_agg[in_stat_column_name + "_2h/N_max"] = df_agg["#max_2nd_half"] / df_agg["#max"]
-    df_agg[in_stat_column_name + "_2h/N_avg"] = df_agg["#avg_2nd_half"] / df_agg["#avg"]
-    df_agg[in_stat_column_name + "_2h/1h_sum"] = df_agg["#sum_2nd_half"] / df_agg["#sum_1st_half"]
-    df_agg[in_stat_column_name + "_2h/1h_max"] = df_agg["#max_2nd_half"] / df_agg["#max_1st_half"]
-    df_agg[in_stat_column_name + "_2h/1h_avg"] = df_agg["#avg_2nd_half"] / df_agg["#avg_1st_half"]
+    df_agg[in_stat_column_name + "_1/N_sum_L" + str(in_N_month)] = df_agg["#sum_curr"] / df_agg["#sum"]
+    df_agg[in_stat_column_name + "_1/N_max_L" + str(in_N_month)] = df_agg["#max_curr"] / df_agg["#max"]
+    df_agg[in_stat_column_name + "_1/N_avg_L" + str(in_N_month)] = df_agg["#avg_curr"] / df_agg["#avg"]
+    df_agg[in_stat_column_name + "_2h/N_sum_L" + str(in_N_month)] = df_agg["#sum_2nd_half"] / df_agg["#sum"]
+    df_agg[in_stat_column_name + "_2h/N_max_L" + str(in_N_month)] = df_agg["#max_2nd_half"] / df_agg["#max"]
+    df_agg[in_stat_column_name + "_2h/N_avg_L" + str(in_N_month)] = df_agg["#avg_2nd_half"] / df_agg["#avg"]
+    df_agg[in_stat_column_name + "_2h/1h_sum_L" + str(in_N_month)] = df_agg["#sum_2nd_half"] / df_agg["#sum_1st_half"]
+    df_agg[in_stat_column_name + "_2h/1h_max_L" + str(in_N_month)] = df_agg["#max_2nd_half"] / df_agg["#max_1st_half"]
+    df_agg[in_stat_column_name + "_2h/1h_avg_L" + str(in_N_month)] = df_agg["#avg_2nd_half"] / df_agg["#avg_1st_half"]
     #    print(df_agg)
     if (in_N_month in [3, 9, 12]):
         df_1st_half_mths_agg_special = df_1st_half_mths_special.groupby(in_key_column_name)[in_stat_column_name].agg(

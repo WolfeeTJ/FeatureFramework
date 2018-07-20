@@ -67,12 +67,6 @@ def log_cur_time(in_str=None):
 def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, in_end_month, in_where):
     in_dataframe = pd.read_table("data/" + in_datasource_name + ".txt")
 
-    # 输入变量定义区
-    key_column = in_key_column  # 3.客户ID字段（输入项3）  假设是customer
-    time_interval_column = in_month_column  # 时间（月份）字段
-    value_gt_N = 8  # 大于N连续出现次数
-    bin_N = 5  # （等分段数可作为参数，默认=5）
-    bin_value_column = "amt2"  # 等分段字段
 
     # 1.指定时间周期（输入项1）（1）最近N个周期内
     df_filter = in_dataframe.query(
@@ -116,11 +110,11 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
     log_cur_time("一般统计")
     df_result = df_result[in_key_column].drop_duplicates().to_frame()
     df_conf_var_gen_base_stat = conf_var_gen_base_stat.query("datasource == '" + in_datasource_name + "'")
-    for i in range(0, len(df_conf_var_gen_base_stat)):
-        var_name = df_conf_var_gen_base_stat.iloc[i_df_conf_pct]["var_name"]
-        month_combinations = df_conf_var_gen_base_stat.iloc[i_df_conf_pct]["month_combinations"]
-        month_start = df_conf_var_gen_base_stat.iloc[i_df_conf_pct]["month_start"]
-        month_end = df_conf_var_gen_base_stat.iloc[i_df_conf_pct]["month_end"]
+    for i_df_conf_var_gen_base_stat in range(0, len(df_conf_var_gen_base_stat)):
+        var_name = df_conf_var_gen_base_stat.iloc[i_df_conf_var_gen_base_stat]["var_name"]
+        month_combinations = df_conf_var_gen_base_stat.iloc[i_df_conf_var_gen_base_stat]["month_combinations"]
+        month_start = df_conf_var_gen_base_stat.iloc[i_df_conf_var_gen_base_stat]["month_start"]
+        month_end = df_conf_var_gen_base_stat.iloc[i_df_conf_var_gen_base_stat]["month_end"]
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
         for var_month in list_month_combinations:

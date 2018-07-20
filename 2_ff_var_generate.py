@@ -22,4 +22,4 @@ for i in range(0, len(configfile)):
     df_result_tmp = ff.ff_main(datasource, key_col, month_col, month_start, month_end, in_where )
 
 df_result
-df_result_t = df_result.T
+df_result_t = df_result_tmp.T
