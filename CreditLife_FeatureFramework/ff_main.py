@@ -101,14 +101,33 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
         month_end = df_conf_pct.iloc[i_df_conf_pct]["month_end"]
         s_var_combination = pd.Series(var_combinations.split(","))
         list_var_combination = s_var_combination.apply(lambda x: x.strip()).tolist()
-        for var_month in month_combinations.split(","):
+        s_month_combinations = pd.Series(month_combinations.split(","))
+        list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        for var_month in list_month_combinations:
             dic_combination_dic, df_pct_var = ff.ff_combination_pct(df_filter, in_key_column, in_month_column,
-                                                                    list_var_combination, int(var_month))
+                                                                    list_var_combination, var_month)
             df_result = df_result.merge(df_pct_var, how="left", on=[in_key_column, in_month_column],
                                         validate="one_to_one")
-    df_result = df_result.query(in_month_column + " >= " + str(month_start) + " and " + in_month_column + " <=" + str(month_end))
-    log_cur_time("中间层+百分比衍生")
+    df_result = df_result.query(
+        in_month_column + " >= " + str(month_start) + " and " + in_month_column + " <=" + str(month_end))
+    log_cur_time("中间层+百分比衍生结果")
     print(df_result)
+
+    log_cur_time("一般统计")
+    df_result = df_result[in_key_column].drop_duplicates().to_frame()
+    df_conf_var_gen_base_stat = conf_var_gen_base_stat.query("datasource == '" + in_datasource_name + "'")
+    for i in range(0, len(df_conf_var_gen_base_stat)):
+        var_name = df_conf_var_gen_base_stat.iloc[i_df_conf_pct]["var_name"]
+        month_combinations = df_conf_var_gen_base_stat.iloc[i_df_conf_pct]["month_combinations"]
+        month_start = df_conf_var_gen_base_stat.iloc[i_df_conf_pct]["month_start"]
+        month_end = df_conf_var_gen_base_stat.iloc[i_df_conf_pct]["month_end"]
+        s_month_combinations = pd.Series(month_combinations.split(","))
+        list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        for var_month in list_month_combinations:
+            dic_common_stat = ff.ff_common_stat(df_filter, in_key_column, in_month_column, var_name,
+                                                month_end, var_month)
+            df_result = df_result.merge(dic_common_stat, how="outer", on=[in_key_column],
+                                        validate="one_to_one")
 
     log_cur_time("最终结果")
     df_result_t = df_result.T

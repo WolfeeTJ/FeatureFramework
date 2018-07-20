@@ -70,7 +70,8 @@ def ff_check_total_bin_distribution_by_val(in_dataframe, in_bin_value_column):
 # （2）百分比衍生：（多变量）
 # 分子（变量A+变量B+……）/分母（变量A+变量B+变量C……）（分子、分母指定各自的变量范围，作排列组合，不输出分子项等于分母项的结果）
 
-def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column, in_pct_column_lists, in_rolling_months):
+def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column, in_pct_column_lists,
+                       in_rolling_months):
     # 排列组合分子
     column_combinations = []
     import itertools
@@ -99,25 +100,31 @@ def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column
     # 循环计算组合
     # df_pct_var = in_dataframe[in_pct_column_lists]
 
-    df_pct_var = in_dataframe.groupby(in_key_column_name)[in_pct_column_lists + [in_time_interval_column]].rolling(in_rolling_months, on=in_time_interval_column).sum()
+    df_pct_var = in_dataframe.groupby(in_key_column_name)[in_pct_column_lists + [in_time_interval_column]].rolling(
+        in_rolling_months, on=in_time_interval_column).sum()
     # df_pct_var
     for tup in column_result:
         numerator = list(tup[0])
         numerator.sort()
         denominator = list(tup[1])
         denominator.sort()
-        df_pct_var["+".join(numerator) + "/" + "+".join(denominator) + "_L" + str(in_rolling_months)] = df_pct_var[list(tup[0])].sum(axis=1) / \
-                                                                        df_pct_var[list(tup[1])].sum(axis=1)
+        df_pct_var["+".join(numerator) + "/" + "+".join(denominator) + "_L" + str(in_rolling_months)] = df_pct_var[list(
+            tup[0])].sum(axis=1) / \
+                                                                                                        df_pct_var[list(
+                                                                                                            tup[
+                                                                                                                1])].sum(
+                                                                                                            axis=1)
 
     set_result_columns = set(df_pct_var.columns)
     set_result_columns -= set(in_pct_column_lists)
-    df_pct_var=df_pct_var.reindex(columns=list(set_result_columns))
+    df_pct_var = df_pct_var.reindex(columns=list(set_result_columns))
 
     return (dict_result_dic, df_pct_var)
 
 
 # 大于0的频数（百分比）、求和、最小值、最大值、平均值、中位数、缺失值个数与占比
-def ff_common_stat(in_dataframe, in_key_column_name, in_stat_column_name, in_end_month, in_N_month):
+def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_name, in_stat_column_name, in_end_month,
+                   in_N_month):
     def cnt_gt_0(x):
         return x[x > 0].size;
 
@@ -169,13 +176,16 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_stat_column_name, in_end
         minus_2nd_half_mths_start = 0
         minus_1st_half_mths_end = 0
 
-    df_curr_mth = in_dataframe.query("month_nbr ==" + str(in_end_month))
-    df_last_mth = in_dataframe.query("month_nbr ==" + str(in_end_month - minus_last_mth))
+    df_curr_mth = in_dataframe.query(in_time_interval_column_name + " == " + str(in_end_month))
+    df_last_mth = in_dataframe.query(in_time_interval_column_name + " == " + str(in_end_month - minus_last_mth))
     df_1st_half_mths = in_dataframe.query(
-        "month_nbr >= " + str(in_end_month - minus_1st_half_mths_start) + " and month_nbr <=" + str(
+        in_time_interval_column_name + " >= " + str(
+            in_end_month - minus_1st_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
             in_end_month - minus_1st_half_mths_end))
     df_2nd_half_mths = in_dataframe.query(
-        "month_nbr >= " + str(in_end_month - minus_2nd_half_mths_start) + " and month_nbr <=" + str(in_end_month))
+        in_time_interval_column_name + " >= " + str(
+            in_end_month - minus_2nd_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
+            in_end_month))
 
     agg_funcs = [("#sum", np.sum), ("#max", np.max), ("#avg", np.mean)]
     df_curr_mth_agg = df_curr_mth.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
@@ -194,22 +204,27 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_stat_column_name, in_end
                            suffixes=["", "_2nd_half"])
 
     # special additional cases
-    df_1st_half_mths_special=pd.DataFrame([])
-    df_2nd_half_mths_special=pd.DataFrame([])
+    df_1st_half_mths_special = pd.DataFrame([])
+    df_2nd_half_mths_special = pd.DataFrame([])
     if (in_N_month == 3):
         df_1st_half_mths_special = in_dataframe.query(
-            "month_nbr >= " + str(in_end_month - 2) + " and month_nbr <=" + str(in_end_month - 1))
-        df_2nd_half_mths_special = in_dataframe.query("month_nbr == " + str(in_end_month))
+            in_time_interval_column_name + " >= " + str(
+                in_end_month - 2) + " and " + in_time_interval_column_name + " <=" + str(in_end_month - 1))
+        df_2nd_half_mths_special = in_dataframe.query(in_time_interval_column_name + " == " + str(in_end_month))
     elif (in_N_month == 9):
         df_1st_half_mths_special = in_dataframe.query(
-            "month_nbr >= " + str(in_end_month - 8) + " and month_nbr <=" + str(in_end_month - 3))
+            in_time_interval_column_name + " >= " + str(
+                in_end_month - 8) + " and " + in_time_interval_column_name + " <=" + str(in_end_month - 3))
         df_2nd_half_mths_special = in_dataframe.query(
-            "month_nbr >= " + str(in_end_month - 2) + " and month_nbr <=" + str(in_end_month))
+            in_time_interval_column_name + " >= " + str(
+                in_end_month - 2) + " and " + in_time_interval_column_name + " <=" + str(in_end_month))
     elif (in_N_month == 12):
         df_1st_half_mths_special = in_dataframe.query(
-            "month_nbr >= " + str(in_end_month - 11) + " and month_nbr <=" + str(in_end_month - 3))
+            in_time_interval_column_name + " >= " + str(
+                in_end_month - 11) + " and " + in_time_interval_column_name + " <=" + str(in_end_month - 3))
         df_2nd_half_mths_special = in_dataframe.query(
-            "month_nbr >= " + str(in_end_month - 2) + " and month_nbr <=" + str(in_end_month))
+            in_time_interval_column_name + " >= " + str(
+                in_end_month - 2) + " and " + in_time_interval_column_name + " <=" + str(in_end_month))
 
     df_agg[in_stat_column_name + "_1/N_sum"] = df_agg["#sum_curr"] / df_agg["#sum"]
     df_agg[in_stat_column_name + "_1/N_max"] = df_agg["#max_curr"] / df_agg["#max"]
@@ -300,7 +315,7 @@ def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_colu
     dfjoin["gt_N"] = dfjoin[in_stat_column_name] > in_value_continue_inc_gt_N
     dfjoin["l1_gt_N"] = dfjoin[in_stat_column_name + "_l1"] > in_value_continue_inc_gt_N
     dfjoin["continue_inc"] = ~(
-                (dfjoin["gt_pre"] & dfjoin["gt_N"]) & ((dfjoin["l1_gt_pre"] & dfjoin["l1_gt_N"]) | dfjoin["l1_gt_N"]))
+            (dfjoin["gt_pre"] & dfjoin["gt_N"]) & ((dfjoin["l1_gt_pre"] & dfjoin["l1_gt_N"]) | dfjoin["l1_gt_N"]))
     dfjoin["continue_inc_cum"] = dfjoin.groupby(in_key_column_name)["continue_inc"].cumsum()
     # dfjoin
 
