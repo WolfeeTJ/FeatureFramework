@@ -87,7 +87,7 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
     df_conf_pct = conf_pct.query("datasource == '" + in_datasource_name + "'")
     log_cur_time("百分比衍生")
 
-    df_result = df_filter.copy()
+    df_result_var_pct = df_filter.copy()
     for i_df_conf_pct in range(0, len(df_conf_pct)):
         var_combinations = df_conf_pct.iloc[i_df_conf_pct]["var_combinations"]
         month_combinations = df_conf_pct.iloc[i_df_conf_pct]["month_combinations"]
@@ -100,15 +100,15 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
         for var_month in list_month_combinations:
             dic_combination_dic, df_pct_var = ff.ff_combination_pct(df_filter, in_key_column, in_month_column,
                                                                     list_var_combination, var_month)
-            df_result = df_result.merge(df_pct_var, how="left", on=[in_key_column, in_month_column],
+            df_result_var_pct = df_result_var_pct.merge(df_pct_var, how="left", on=[in_key_column, in_month_column],
                                         validate="one_to_one")
-    df_result = df_result.query(
+    df_result_var_pct = df_result_var_pct.query(
         in_month_column + " >= " + str(month_start) + " and " + in_month_column + " <=" + str(month_end))
     log_cur_time("中间层+百分比衍生结果")
-    print(df_result)
+    print(df_result_var_pct)
 
     log_cur_time("一般统计")
-    df_result = df_result[in_key_column].drop_duplicates().to_frame()
+    df_result = df_result_var_pct[in_key_column].drop_duplicates().to_frame()
     df_conf_var_gen_base_stat = conf_var_gen_base_stat.query("datasource == '" + in_datasource_name + "'")
     for i_df_conf_var_gen_base_stat in range(0, len(df_conf_var_gen_base_stat)):
         var_name = df_conf_var_gen_base_stat.iloc[i_df_conf_var_gen_base_stat]["var_name"]
