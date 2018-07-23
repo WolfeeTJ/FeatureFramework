@@ -1,4 +1,4 @@
-datasource	var_name	month_combinations	where
-MD_MTH_DATA	trade_type	1,3,6,9,12	
-MD_MTH_DATA	trade_category	1,3,6,9,12	
-ANOTHER_FILE	t_type	1,3,6,9,12	
+datasource	var_name	month_start	month_end	month_combinations	where
+MD_MTH_DATA	trade_type	7	12	1,3,6,9,12	
+MD_MTH_DATA	trade_category	7	12	1,3,6,9,12	
+ANOTHER_FILE	t_type	3	12	1,3,6,9,12	

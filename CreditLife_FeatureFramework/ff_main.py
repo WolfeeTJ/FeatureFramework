@@ -185,6 +185,22 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
     log_cur_time("分段分布 结果")
     print(df_result)
 
+    log_cur_time("字符分布")
+    df_conf_var_gen_char_stat = conf_var_gen_char_stat.query("datasource == '" + in_datasource_name + "'")
+    for i_df_conf_var_gen_continue_stat in range(0, len(df_conf_var_gen_char_stat)):
+        var_name = df_conf_var_gen_char_stat.iloc[i_df_conf_var_gen_continue_stat]["var_name"]
+        month_combinations = df_conf_var_gen_char_stat.iloc[i_df_conf_var_gen_continue_stat]["month_combinations"]
+        month_start = df_conf_var_gen_char_stat.iloc[i_df_conf_var_gen_continue_stat]["month_start"]
+        month_end = df_conf_var_gen_char_stat.iloc[i_df_conf_var_gen_continue_stat]["month_end"]
+        s_month_combinations = pd.Series(month_combinations.split(","))
+        list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        for var_month in list_month_combinations:
+            df_result_dummy = ff.ff_category_cnt_pct(df_result_var_pct, in_key_column, var_name,
+                                                     in_month_column, month_end, var_month)
+            df_result = df_result.merge(df_result_dummy, left_index=True, right_index=True)
+    log_cur_time("字符分布 结果")
+    print(df_result)
+
     log_cur_time("最终结果")
     df_result_t = df_result.T
     print(df_result)

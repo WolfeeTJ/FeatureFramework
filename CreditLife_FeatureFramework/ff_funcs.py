@@ -357,11 +357,17 @@ def ff_bin_distribution_by_val(in_dataframe, in_key_column_name, in_bin_value_co
 
 
 # 对于字符型字段，统计各值出现的数量和比例
-def ff_category_cnt_pct(in_dataframe, in_key_column_name, in_stat_column_name):
-    pd_dummy = pd.get_dummies(in_dataframe[in_stat_column_name], prefix=in_stat_column_name)
+def ff_category_cnt_pct(in_dataframe, in_key_column_name, in_stat_column_name, in_time_interval_column,
+                        in_end_month, in_N_month):
+    # 预处理
+    cond_filter_months = in_time_interval_column + " <= " + str(
+        in_end_month) + " and " + in_time_interval_column + " >= " + str(
+        in_end_month - in_N_month + 1)
+    df_last_N_months=in_dataframe.query(cond_filter_months)
+    pd_dummy = pd.get_dummies(df_last_N_months[in_stat_column_name], prefix=in_stat_column_name)
     pd_dummy[in_key_column_name] = in_dataframe[in_key_column_name]
     pd_dummy_groupby = pd_dummy.groupby(in_key_column_name)
-    pd_dummy_result_cnt = pd_dummy_groupby.sum().add_suffix("_cnt")
-    pd_dummy_result_pct = pd_dummy_groupby.mean().add_suffix("_pct")
+    pd_dummy_result_cnt = pd_dummy_groupby.sum().add_suffix("_cnt_L" + str(in_N_month))
+    pd_dummy_result_pct = pd_dummy_groupby.mean().add_suffix("_pct_L" + str(in_N_month))
     pd_dummy_result = pd_dummy_result_cnt.merge(pd_dummy_result_pct, left_index=True, right_index=True)
     return pd_dummy_result
