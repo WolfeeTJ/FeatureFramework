@@ -1,9 +1,9 @@
-datasource	var_name	month_combinations	bin_by_loc	bin_by_val	is_discrete
-MD_MTH_DATA	amt1	1,3,6,9,12	5	3	Y
-MD_MTH_DATA	amt2	1,3,6,9,12	5	2	
-MD_MTH_DATA	amt3	1,3,6,9,12	6		
-MD_MTH_DATA	amt4	1,3,6,9,12		4	
-ANOTHER_FILE	a1	1,3,6,9,12	3	4	Y
-ANOTHER_FILE	a2	1,3,6,9,12	8		
-ANOTHER_FILE	a3	1,3,6,9,12		6	
-ANOTHER_FILE	a4	1,3,6,9,12		7	
+datasource	var_name	month_start	month_end	month_combinations	bin_by_loc	bin_by_val	is_discrete
+MD_MTH_DATA	amt1	7	12	1,3,6	5	3	Y
+MD_MTH_DATA	amt2	7	12	1,3,6	5	2	
+MD_MTH_DATA	amt3	7	12	1,3,6	6		
+MD_MTH_DATA	amt4	7	12	1,3,6		4	
+ANOTHER_FILE	a1	3	12	1,3	3	4	Y
+ANOTHER_FILE	a2	3	12	1,3	8		
+ANOTHER_FILE	a3	3	12	1,3		6	
+ANOTHER_FILE	a4	3	12	1,3		7	

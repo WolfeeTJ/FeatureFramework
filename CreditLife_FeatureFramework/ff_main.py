@@ -6,6 +6,7 @@ Created on Tue Jul  3 15:44:42 2018
 """
 import CreditLife_FeatureFramework.ff_funcs as ff
 import pandas as pd
+import numpy as np
 import datetime
 
 
@@ -140,20 +141,48 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
         for var_month in list_month_combinations:
             if (continue_show_or_inc == "show"):
-                df_result[var_name + "_continu_gt_show_" + str(var_month)] = ff.ff_continue_gt_N(df_result_var_pct,
-                                                                                                 in_key_column,
-                                                                                                 in_month_column,
-                                                                                                 var_name,
-                                                                                                 threshold_value)
-
-
+                s = ff.ff_continue_gt_N(df_result_var_pct,
+                                        in_key_column,
+                                        in_month_column,
+                                        var_name,
+                                        threshold_value,
+                                        month_end,
+                                        var_month)
+                df_result[var_name + "_continu_gt_show_" + str(var_month)] = s
             elif (continue_show_or_inc == "inc"):
-                df_result[var_name + "_continu_gt_inc_" + str(var_month)] = ff.ff_continue_inc_gt_N(df_result_var_pct,
-                                                                                                    in_key_column,
-                                                                                                    in_month_column,
-                                                                                                    var_name,
-                                                                                                    threshold_value)
+                s = ff.ff_continue_inc_gt_N(df_result_var_pct,
+                                            in_key_column,
+                                            in_month_column,
+                                            var_name,
+                                            threshold_value,
+                                            month_end,
+                                            var_month)
+                df_result[var_name + "_continu_gt_inc_" + str(var_month)] = s
     log_cur_time("连续出现/连续增加 结果")
+    print(df_result)
+
+    log_cur_time("分段分布")
+    df_conf_var_gen_bin_stat = conf_var_gen_bin_stat.query("datasource == '" + in_datasource_name + "'")
+    for i_df_conf_var_gen_continue_stat in range(0, len(df_conf_var_gen_bin_stat)):
+        var_name = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["var_name"]
+        month_combinations = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["month_combinations"]
+        month_start = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["month_start"]
+        month_end = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["month_end"]
+        bin_by_loc = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["bin_by_loc"]
+        bin_by_val = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["bin_by_val"]
+        is_discrete = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["is_discrete"]
+        s_month_combinations = pd.Series(month_combinations.split(","))
+        list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        for var_month in list_month_combinations:
+            if (~ np.isnan(bin_by_loc)):
+                df_result_bin_loc = ff.ff_bin_distribution_by_loc(df_result_var_pct, in_key_column, var_name, bin_by_loc,
+                                                                  in_month_column, month_end, var_month)
+                df_result = df_result.merge(df_result_bin_loc, left_index=True, right_index=True)
+            if (~ np.isnan(bin_by_val)):
+                df_result_bin_val = ff.ff_bin_distribution_by_val(df_result_var_pct, in_key_column, var_name, bin_by_val,
+                                                                  in_month_column, month_end, var_month)
+                df_result = df_result.merge(df_result_bin_val, left_index=True, right_index=True)
+    log_cur_time("分段分布 结果")
     print(df_result)
 
     log_cur_time("最终结果")
