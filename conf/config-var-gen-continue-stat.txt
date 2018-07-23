@@ -1,7 +1,7 @@
-datasource	var_name	month_combinations	continue_show_or_inc
-MD_MTH_DATA	amt2	1,3,6,9,12	show
-MD_MTH_DATA	amt3	1,3,6,9,12	show
-MD_MTH_DATA	amt4	1,3,6,9,12	inc
-ANOTHER_FILE	a2	1,3,6,9,12	show
-ANOTHER_FILE	a3	1,3,6,9,12	show
-ANOTHER_FILE	a4	1,3,6,9,12	inc
+datasource	var_name	month_start	month_end	month_combinations	continue_show_or_inc	threshold_value
+MD_MTH_DATA	amt2	7	12	1,3,6	show	5
+MD_MTH_DATA	amt3	7	12	1,3,6	show	5
+MD_MTH_DATA	amt4	7	12	1,3,6	inc	5
+ANOTHER_FILE	a2	3	12	1,3	show	5
+ANOTHER_FILE	a3	3	12	1,3	show	5
+ANOTHER_FILE	a4	3	12	1,3	inc	5

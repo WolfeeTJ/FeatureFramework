@@ -109,11 +109,7 @@ def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column
         denominator = list(tup[1])
         denominator.sort()
         df_pct_var["+".join(numerator) + "/" + "+".join(denominator) + "_L" + str(in_rolling_months)] = df_pct_var[list(
-            tup[0])].sum(axis=1) / \
-                                                                                                        df_pct_var[list(
-                                                                                                            tup[
-                                                                                                                1])].sum(
-                                                                                                            axis=1)
+            tup[0])].sum(axis=1) / df_pct_var[list(tup[1])].sum(axis=1)
 
     set_result_columns = set(df_pct_var.columns)
     set_result_columns -= set(in_pct_column_lists)
@@ -267,8 +263,8 @@ def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, 
     dfleft = in_dataframe.sort_values(by=[in_key_column_name, in_time_interval_column])
     # dfleft
     dfnext = dfleft.copy()
-    dfnext[in_time_interval_column] = dfleft[
-                                          in_time_interval_column] + 1  # TODO: add different interval according to corresponding time interval
+    # TODO: add different interval according to corresponding time interval
+    dfnext[in_time_interval_column] = dfleft[in_time_interval_column] + 1
     # dfnext
     dfjoin = dfleft.merge(dfnext, how="left", on=[in_time_interval_column, in_key_column_name], validate="one_to_one",
                           suffixes=["", "_l1"])
@@ -284,10 +280,6 @@ def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, 
     # dfjoin.groupby(["customer","gt_N"])["not_eq_cum"].value_counts()[df_value_count.index.get_level_values(1)==True].groupby(level=0).max()
     df_result_continues_gt_N = dfjoin.query("gt_N == True").groupby(in_key_column_name)[
         "continue_gt_cum"].value_counts().groupby(level=0).max()
-    df_key = in_dataframe[in_key_column_name].drop_duplicates().sort_values()
-    df_result_continues_gt_N = df_result_continues_gt_N.reindex(df_key).fillna(0).astype(int)
-    df_result_continues_gt_N.index.name = in_key_column_name
-    df_result_continues_gt_N.name = in_stat_column_name + "_continu_gt_N"
     return df_result_continues_gt_N
 
 
@@ -298,8 +290,8 @@ def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_colu
     dfleft = in_dataframe.sort_values(by=[in_key_column_name, in_time_interval_column])
     # dfleft
     dfnext = dfleft.copy()
-    dfnext[in_time_interval_column] = dfleft[
-                                          in_time_interval_column] + 1  # TODO: add different interval according to corresponding time interval
+    # TODO: add different interval according to corresponding time interval
+    dfnext[in_time_interval_column] = dfleft[in_time_interval_column] + 1
     # dfnext
     dfnext2 = dfnext.copy()
     dfnext2[in_time_interval_column] = dfnext[in_time_interval_column] + 1

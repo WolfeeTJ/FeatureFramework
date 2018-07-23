@@ -67,7 +67,6 @@ def log_cur_time(in_str=None):
 def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, in_end_month, in_where):
     in_dataframe = pd.read_table("data/" + in_datasource_name + ".txt")
 
-
     # 1.指定时间周期（输入项1）（1）最近N个周期内
     df_filter = in_dataframe.query(
         in_month_column + " >= " + str(in_start_month) + " and " + in_month_column + " <=" + str(in_end_month))
@@ -101,7 +100,7 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
             dic_combination_dic, df_pct_var = ff.ff_combination_pct(df_filter, in_key_column, in_month_column,
                                                                     list_var_combination, var_month)
             df_result_var_pct = df_result_var_pct.merge(df_pct_var, how="left", on=[in_key_column, in_month_column],
-                                        validate="one_to_one")
+                                                        validate="one_to_one")
     df_result_var_pct = df_result_var_pct.query(
         in_month_column + " >= " + str(month_start) + " and " + in_month_column + " <=" + str(month_end))
     log_cur_time("中间层+百分比衍生结果")
@@ -109,6 +108,7 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
 
     log_cur_time("一般统计")
     df_result = df_result_var_pct[in_key_column].drop_duplicates().to_frame()
+    df_result.index = df_result[in_key_column]
     df_conf_var_gen_base_stat = conf_var_gen_base_stat.query("datasource == '" + in_datasource_name + "'")
     for i_df_conf_var_gen_base_stat in range(0, len(df_conf_var_gen_base_stat)):
         var_name = df_conf_var_gen_base_stat.iloc[i_df_conf_var_gen_base_stat]["var_name"]
@@ -122,6 +122,39 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
                                                 month_end, var_month)
             df_result = df_result.merge(dic_common_stat, how="outer", on=[in_key_column],
                                         validate="one_to_one")
+    log_cur_time("一般统计结果")
+    df_result.index = df_result[in_key_column]
+    print(df_result)
+
+    df_conf_var_gen_continue_stat = conf_var_gen_continue_stat.query("datasource == '" + in_datasource_name + "'")
+    log_cur_time("连续出现/连续增加")
+    for i_df_conf_var_gen_continue_stat in range(0, len(df_conf_var_gen_continue_stat)):
+        var_name = df_conf_var_gen_continue_stat.iloc[i_df_conf_var_gen_continue_stat]["var_name"]
+        month_combinations = df_conf_var_gen_continue_stat.iloc[i_df_conf_var_gen_continue_stat]["month_combinations"]
+        month_start = df_conf_var_gen_continue_stat.iloc[i_df_conf_var_gen_continue_stat]["month_start"]
+        month_end = df_conf_var_gen_continue_stat.iloc[i_df_conf_var_gen_continue_stat]["month_end"]
+        continue_show_or_inc = df_conf_var_gen_continue_stat.iloc[i_df_conf_var_gen_continue_stat][
+            "continue_show_or_inc"]
+        threshold_value = df_conf_var_gen_continue_stat.iloc[i_df_conf_var_gen_continue_stat]["threshold_value"]
+        s_month_combinations = pd.Series(month_combinations.split(","))
+        list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        for var_month in list_month_combinations:
+            if (continue_show_or_inc == "show"):
+                df_result[var_name + "_continu_gt_show_" + str(var_month)] = ff.ff_continue_gt_N(df_result_var_pct,
+                                                                                                 in_key_column,
+                                                                                                 in_month_column,
+                                                                                                 var_name,
+                                                                                                 threshold_value)
+
+
+            elif (continue_show_or_inc == "inc"):
+                df_result[var_name + "_continu_gt_inc_" + str(var_month)] = ff.ff_continue_inc_gt_N(df_result_var_pct,
+                                                                                                    in_key_column,
+                                                                                                    in_month_column,
+                                                                                                    var_name,
+                                                                                                    threshold_value)
+    log_cur_time("连续出现/连续增加 结果")
+    print(df_result)
 
     log_cur_time("最终结果")
     df_result_t = df_result.T
