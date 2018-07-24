@@ -84,24 +84,23 @@ def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column
     column_frame["r"] = column_frame["l"].map(lambda x: tuple(set(in_pct_column_lists) - set(x)))
     dict_result_dic = dict()
     i_dict_key_id = in_dic_start_id
-    column_result = set()
     for l in range(column_frame.index.size):
         for i in range(len(column_frame.at[l, "r"]) - 1):
             for j in itertools.combinations(column_frame.at[l, "r"], i + 1):
-                column_result.add((column_frame.at[l, "l"], column_frame.at[l, "l"] + j))
-                dict_result_dic[i_dict_key_id] = "+".join(column_frame.at[l, "l"]) + "/" + "+".join(
-                    column_frame.at[l, "l"] + j) + "_L" + str(in_rolling_months)
+                dict_result_dic[i_dict_key_id] = (
+                    column_frame.at[l, "l"], column_frame.at[l, "l"] + j, in_rolling_months)
                 i_dict_key_id += 1
 
     df_pct_var = in_dataframe.groupby(in_key_column_name)[in_pct_column_lists + [in_time_interval_column]].rolling(
         in_rolling_months, on=in_time_interval_column).sum()
     # df_pct_var
-    for tup in column_result:
+    for k in dict_result_dic.keys():
+        tup = dict_result_dic[k]
         numerator = list(tup[0])
         numerator.sort()
         denominator = list(tup[1])
         denominator.sort()
-        df_pct_var["+".join(numerator) + "/" + "+".join(denominator) + "_L" + str(in_rolling_months)] = df_pct_var[list(
+        df_pct_var["var_" + str(k)] = df_pct_var[list(
             tup[0])].sum(axis=1) / df_pct_var[list(tup[1])].sum(axis=1)
 
     set_result_columns = set(df_pct_var.columns)
@@ -111,9 +110,9 @@ def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column
     return (dict_result_dic, df_pct_var)
 
 
-# 基础统计、各时段前后段环比统计
+# 基础统计
 def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_name, in_stat_column_name, in_end_month,
-                   in_N_month, in_dic_start_id):
+                   in_N_month, in_dic_start_id=None, in_agg_funcs_str=None):
     def cnt_gt_0(x):
         return x[x > 0].size
 
@@ -135,24 +134,32 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
         else:
             return x[x.isna()].size / x.size
 
-    agg_funcs = [(in_stat_column_name + "_cnt_L" + str(in_N_month), np.size),
-                 (in_stat_column_name + "_cnt_gt_0_L" + str(in_N_month), cnt_gt_0),
-                 (in_stat_column_name + "_pct_gt_0_L" + str(in_N_month), pct_gt_0),
-                 (in_stat_column_name + "_sum_L" + str(in_N_month), np.sum),
-                 (in_stat_column_name + "_min_L" + str(in_N_month), np.min),
-                 (in_stat_column_name + "_max_L" + str(in_N_month), np.max),
-                 (in_stat_column_name + "_avg_L" + str(in_N_month), np.average),
-                 (in_stat_column_name + "_med_L" + str(in_N_month), np.median),
-                 (in_stat_column_name + "_cnt_isna_L" + str(in_N_month), cnt_isna),
-                 (in_stat_column_name + "_pct_isna_L" + str(in_N_month), pct_isna)
-                 ]
+    if in_agg_funcs_str is None:
+        agg_funcs_str = ["np.size", "cnt_gt_0", "pct_gt_0", "np.sum", "np.min", "np.max", "np.average", "np.median",
+                     "cnt_isna", "pct_isna"]
+    else:
+        agg_funcs_str = in_agg_funcs_str
 
     cond_filter_months = in_time_interval_column_name + " <= " + str(
         in_end_month) + " and " + in_time_interval_column_name + " >= " + str(
         in_end_month - in_N_month + 1)
     in_df_N_months = in_dataframe.copy().query(cond_filter_months)
+    # df_result = in_df_N_months.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
+
+    dict_result_dic = dict()
+    agg_funcs = []
+    i_dict_key_id = in_dic_start_id
+    for func_name in agg_funcs_str:
+        dict_result_dic[i_dict_key_id] = (in_stat_column_name, func_name, in_N_month)
+        agg_funcs += [(in_stat_column_name + "_" + func_name + "_L" + str(in_N_month), eval(func_name))]
+        i_dict_key_id += 1
     df_result = in_df_N_months.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
 
+    return (dict_result_dic, df_result)
+
+# 各时段前后段环比统计
+def ff_time_range_compare_stat(in_dataframe, in_key_column_name, in_time_interval_column_name, in_stat_column_name, in_end_month,
+                               in_N_month, in_dic_start_id=None, in_agg_funcs_str=None):
     # 过去月份变量对比
     if (in_N_month <= 0):
         raise Exception("parameter last N months should > 0")
@@ -169,6 +176,11 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
         minus_1st_half_mths_start = 0
         minus_2nd_half_mths_start = 0
         minus_1st_half_mths_end = 0
+
+    cond_filter_months = in_time_interval_column_name + " <= " + str(
+        in_end_month) + " and " + in_time_interval_column_name + " >= " + str(
+        in_end_month - in_N_month + 1)
+    in_df_N_months = in_dataframe.copy().query(cond_filter_months)
 
     df_curr_mth = in_df_N_months.query(in_time_interval_column_name + " == " + str(in_end_month))
     df_last_mth = in_df_N_months.query(in_time_interval_column_name + " == " + str(in_end_month - minus_last_mth))
@@ -235,27 +247,24 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
         df_2nd_half_mths_agg_special = df_2nd_half_mths_special.groupby(in_key_column_name)[in_stat_column_name].agg(
             agg_funcs)
         df_agg = df_agg.merge(df_1st_half_mths_agg_special, how="left", on=in_key_column_name, validate="one_to_one",
-                              suffixes=["", "_1st_half_special"])
+                              suffixes=["", "_1st_half_special_L" + str(in_N_month)])
         df_agg = df_agg.merge(df_2nd_half_mths_agg_special, how="left", on=in_key_column_name, validate="one_to_one",
-                              suffixes=["", "_2nd_half_special"])
-        df_agg[in_stat_column_name + "_2h/1h_sum_special"] = df_agg["#sum_2nd_half_special"] / df_agg[
-            "#sum_1st_half_special"]
-        df_agg[in_stat_column_name + "_2h/1h_max_special"] = df_agg["#max_2nd_half_special"] / df_agg[
-            "#max_1st_half_special"]
-        df_agg[in_stat_column_name + "_2h/1h_avg_special"] = df_agg["#avg_2nd_half_special"] / df_agg[
-            "#avg_1st_half_special"]
+                              suffixes=["", "_2nd_half_special_L" + str(in_N_month)])
+        df_agg[in_stat_column_name + "_2h/1h_sum_special_L" + str(in_N_month)] = df_agg["#sum_2nd_half_special_L" + str(
+            in_N_month)] / df_agg["#sum_1st_half_special_L" + str(in_N_month)]
+        df_agg[in_stat_column_name + "_2h/1h_max_special_L" + str(in_N_month)] = df_agg["#max_2nd_half_special_L" + str(
+            in_N_month)] / df_agg["#max_1st_half_special_L" + str(in_N_month)]
+        df_agg[in_stat_column_name + "_2h/1h_avg_special_L" + str(in_N_month)] = df_agg["#avg_2nd_half_special_L" + str(
+            in_N_month)] / df_agg["#avg_1st_half_special_L" + str(in_N_month)]
 
     df_result_agg = df_agg.filter(regex="^[^#]", axis=1)
 
-    df_result = df_result.merge(df_result_agg, on=in_key_column_name)
-
-    return df_result
-
+    return df_result_agg
 
 # 大于N连续出现最大次数
 def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, in_stat_column_name, in_value_gt_N,
                      in_end_month,
-                     in_N_month, in_dic_start_id):
+                     in_N_month, in_dic_start_id=None):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
@@ -282,7 +291,7 @@ def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, 
 # 连续增加，且大于N，最大次数
 def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, in_stat_column_name,
                          in_value_continue_inc_gt_N, in_end_month,
-                         in_N_month, in_dic_start_id):
+                         in_N_month, in_dic_start_id=None):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
@@ -316,7 +325,7 @@ def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_colu
 
 # 按给定data frame，以数量分段，统计各key在分段内的比例
 def ff_bin_distribution_by_loc(in_dataframe, in_key_column_name, in_bin_value_column, in_bin_N, in_time_interval_column,
-                               in_end_month, in_N_month, in_dic_start_id):
+                               in_end_month, in_N_month, in_dic_start_id=None):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
@@ -338,7 +347,7 @@ def ff_bin_distribution_by_loc(in_dataframe, in_key_column_name, in_bin_value_co
 
 # 按给定data frame，以max - min分段，统计各key在分段内的比例
 def ff_bin_distribution_by_val(in_dataframe, in_key_column_name, in_bin_value_column, in_bin_N, in_time_interval_column,
-                               in_end_month, in_N_month, in_dic_start_id):
+                               in_end_month, in_N_month, in_dic_start_id=None):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
@@ -358,12 +367,12 @@ def ff_bin_distribution_by_val(in_dataframe, in_key_column_name, in_bin_value_co
 
 # 对于字符型字段，统计各值出现的数量和比例
 def ff_category_cnt_pct(in_dataframe, in_key_column_name, in_stat_column_name, in_time_interval_column,
-                        in_end_month, in_N_month, in_dic_start_id):
+                        in_end_month, in_N_month, in_dic_start_id=None):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
         in_end_month - in_N_month + 1)
-    df_last_N_months=in_dataframe.query(cond_filter_months)
+    df_last_N_months = in_dataframe.query(cond_filter_months)
     pd_dummy = pd.get_dummies(df_last_N_months[in_stat_column_name], prefix=in_stat_column_name)
     pd_dummy[in_key_column_name] = in_dataframe[in_key_column_name]
     pd_dummy_groupby = pd_dummy.groupby(in_key_column_name)
