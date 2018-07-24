@@ -72,7 +72,7 @@ def ff_check_total_bin_distribution_by_val(in_dataframe, in_bin_value_column):
 # 分子（变量A+变量B+……）/分母（变量A+变量B+变量C……）（分子、分母指定各自的变量范围，作排列组合，不输出分子项等于分母项的结果）
 
 def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column, in_pct_column_lists,
-                       in_rolling_months):
+                       in_rolling_months, in_dic_start_id):
     # 排列组合分子
     column_combinations = []
     import itertools
@@ -83,13 +83,13 @@ def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column
     column_frame = pd.DataFrame({"l": column_combinations})
     column_frame["r"] = column_frame["l"].map(lambda x: tuple(set(in_pct_column_lists) - set(x)))
     dict_result_dic = dict()
-    i_dict_key_id = 0
+    i_dict_key_id = in_dic_start_id
     column_result = set()
     for l in range(column_frame.index.size):
         for i in range(len(column_frame.at[l, "r"]) - 1):
             for j in itertools.combinations(column_frame.at[l, "r"], i + 1):
                 column_result.add((column_frame.at[l, "l"], column_frame.at[l, "l"] + j))
-                dict_result_dic["var_" + str(i_dict_key_id)] = "+".join(column_frame.at[l, "l"]) + "/" + "+".join(
+                dict_result_dic[i_dict_key_id] = "+".join(column_frame.at[l, "l"]) + "/" + "+".join(
                     column_frame.at[l, "l"] + j) + "_L" + str(in_rolling_months)
                 i_dict_key_id += 1
 
@@ -113,27 +113,27 @@ def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column
 
 # 基础统计、各时段前后段环比统计
 def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_name, in_stat_column_name, in_end_month,
-                   in_N_month):
+                   in_N_month, in_dic_start_id):
     def cnt_gt_0(x):
-        return x[x > 0].size;
+        return x[x > 0].size
 
     def pct_gt_0(x):
         if x.size == 0:
-            return 0;
+            return 0
         else:
-            return x[x > 0].size / x.size;
+            return x[x > 0].size / x.size
 
     def cnt_isna(x):
         if x.size == 0:
-            return 0;
+            return 0
         else:
-            return x[x.isna()].size;
+            return x[x.isna()].size
 
     def pct_isna(x):
         if x.size == 0:
-            return 0;
+            return 0
         else:
-            return x[x.isna()].size / x.size;
+            return x[x.isna()].size / x.size
 
     agg_funcs = [(in_stat_column_name + "_cnt_L" + str(in_N_month), np.size),
                  (in_stat_column_name + "_cnt_gt_0_L" + str(in_N_month), cnt_gt_0),
@@ -255,7 +255,7 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
 # 大于N连续出现最大次数
 def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, in_stat_column_name, in_value_gt_N,
                      in_end_month,
-                     in_N_month):
+                     in_N_month, in_dic_start_id):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
@@ -282,7 +282,7 @@ def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, 
 # 连续增加，且大于N，最大次数
 def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, in_stat_column_name,
                          in_value_continue_inc_gt_N, in_end_month,
-                         in_N_month):
+                         in_N_month, in_dic_start_id):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
@@ -316,7 +316,7 @@ def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_colu
 
 # 按给定data frame，以数量分段，统计各key在分段内的比例
 def ff_bin_distribution_by_loc(in_dataframe, in_key_column_name, in_bin_value_column, in_bin_N, in_time_interval_column,
-                               in_end_month, in_N_month):
+                               in_end_month, in_N_month, in_dic_start_id):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
@@ -338,7 +338,7 @@ def ff_bin_distribution_by_loc(in_dataframe, in_key_column_name, in_bin_value_co
 
 # 按给定data frame，以max - min分段，统计各key在分段内的比例
 def ff_bin_distribution_by_val(in_dataframe, in_key_column_name, in_bin_value_column, in_bin_N, in_time_interval_column,
-                               in_end_month, in_N_month):
+                               in_end_month, in_N_month, in_dic_start_id):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
@@ -358,7 +358,7 @@ def ff_bin_distribution_by_val(in_dataframe, in_key_column_name, in_bin_value_co
 
 # 对于字符型字段，统计各值出现的数量和比例
 def ff_category_cnt_pct(in_dataframe, in_key_column_name, in_stat_column_name, in_time_interval_column,
-                        in_end_month, in_N_month):
+                        in_end_month, in_N_month, in_dic_start_id):
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
