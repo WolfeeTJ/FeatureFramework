@@ -136,7 +136,7 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
 
     if in_agg_funcs_str is None:
         agg_funcs_str = ["np.size", "cnt_gt_0", "pct_gt_0", "np.sum", "np.min", "np.max", "np.average", "np.median",
-                     "cnt_isna", "pct_isna"]
+                         "cnt_isna", "pct_isna"]
     else:
         agg_funcs_str = in_agg_funcs_str
 
@@ -157,109 +157,115 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
 
     return (dict_result_dic, df_result)
 
+
 # 各时段前后段环比统计
-def ff_time_range_compare_stat(in_dataframe, in_key_column_name, in_time_interval_column_name, in_stat_column_name, in_end_month,
-                               in_N_month, in_dic_start_id=None, in_agg_funcs_str=None):
+def ff_time_range_compare_stat(in_dataframe, in_key_column_name, in_time_interval_column_name, in_stat_column_name,
+                               in_end_month,
+                               in_N_month, in_2nd_months=None, in_1st_months=None, in_dic_start_id=None,
+                               in_agg_funcs_str=None):
     # 过去月份变量对比
+    minus_2nd_months = in_2nd_months  # 分子月份数量（从end month往前推的月份数，含end month当月）
+    minus_1st_months = in_1st_months  # 分母月份数量（从end month - N + 1开始，往后推的月份数，含end month - N + 1）
+
     if (in_N_month <= 0):
         raise Exception("parameter last N months should > 0")
     elif (in_N_month > 1):
-        minus_last_mth = 1
-        minus_1st_half_mths_start = in_N_month - 1
-        if ((in_N_month % 2) == 0):
-            minus_2nd_half_mths_start = in_N_month / 2 - 1
-        else:
-            minus_2nd_half_mths_start = (in_N_month + 1) / 2 - 1
-        minus_1st_half_mths_end = minus_2nd_half_mths_start + 1
+        if (minus_2nd_months is None and minus_1st_months is None):
+            if ((in_N_month % 2) == 0):
+                minus_2nd_months = in_N_month / 2
+                minus_1st_months = in_N_month / 2
+            else:
+                minus_2nd_months = (in_N_month + 1) / 2
+                minus_1st_months = (in_N_month + 1) / 2
     else:  # in_N_month==1
-        minus_last_mth = 0
-        minus_1st_half_mths_start = 0
-        minus_2nd_half_mths_start = 0
-        minus_1st_half_mths_end = 0
+        minus_2nd_months = 1
+        minus_1st_months = 1
+    minus_2nd_months = int(minus_2nd_months)
+    minus_1st_months = int(minus_1st_months)
 
     cond_filter_months = in_time_interval_column_name + " <= " + str(
         in_end_month) + " and " + in_time_interval_column_name + " >= " + str(
         in_end_month - in_N_month + 1)
     in_df_N_months = in_dataframe.copy().query(cond_filter_months)
+    df_result_agg = in_df_N_months[in_key_column_name].drop_duplicates().to_frame()
+    df_result_agg.index = df_result_agg[in_key_column_name]
 
-    df_curr_mth = in_df_N_months.query(in_time_interval_column_name + " == " + str(in_end_month))
-    df_last_mth = in_df_N_months.query(in_time_interval_column_name + " == " + str(in_end_month - minus_last_mth))
-    df_1st_half_mths = in_df_N_months.query(
-        in_time_interval_column_name + " >= " + str(
-            in_end_month - minus_1st_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
-            in_end_month - minus_1st_half_mths_end))
-    df_2nd_half_mths = in_df_N_months.query(
-        in_time_interval_column_name + " >= " + str(
-            in_end_month - minus_2nd_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
-            in_end_month))
+    # 定义循环月份列表
+    months_loop = set([(1, in_N_month), (minus_2nd_months, in_N_month), (minus_2nd_months, minus_1st_months)])
 
-    agg_funcs = [("#sum", np.sum), ("#max", np.max), ("#avg", np.mean)]
-    df_curr_mth_agg = df_curr_mth.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
-    df_last_mth_agg = df_last_mth.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
-    df_1st_half_mths_agg = df_1st_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
-    df_2nd_half_mths_agg = df_2nd_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
-    df_all_agg = in_df_N_months.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
-
-    df_agg1 = df_all_agg.merge(df_curr_mth_agg, how="left", on=in_key_column_name, validate="one_to_one",
-                               suffixes=["", "_curr"])
-    df_agg2 = df_agg1.merge(df_last_mth_agg, how="left", on=in_key_column_name, validate="one_to_one",
-                            suffixes=["", "_last"])
-    df_agg3 = df_agg2.merge(df_1st_half_mths_agg, how="left", on=in_key_column_name, validate="one_to_one",
-                            suffixes=["", "_1st_half"])
-    df_agg = df_agg3.merge(df_2nd_half_mths_agg, how="left", on=in_key_column_name, validate="one_to_one",
-                           suffixes=["", "_2nd_half"])
+    # agg_funcs = [("#sum", np.sum), ("#max", np.max), ("#avg", np.mean)]
+    agg_funcs = []
+    agg_funcs_str = in_agg_funcs_str
+    agg_funcs_str = ["np.sum", "np.max", "np.mean", ]
 
     # special additional cases
     df_1st_half_mths_special = pd.DataFrame([])
     df_2nd_half_mths_special = pd.DataFrame([])
-    if (in_N_month == 3):
-        df_1st_half_mths_special = in_df_N_months.query(
-            in_time_interval_column_name + " >= " + str(
-                in_end_month - 2) + " and " + in_time_interval_column_name + " <=" + str(in_end_month - 1))
-        df_2nd_half_mths_special = in_df_N_months.query(in_time_interval_column_name + " == " + str(in_end_month))
-    elif (in_N_month == 9):
-        df_1st_half_mths_special = in_df_N_months.query(
-            in_time_interval_column_name + " >= " + str(
-                in_end_month - 8) + " and " + in_time_interval_column_name + " <=" + str(in_end_month - 3))
-        df_2nd_half_mths_special = in_df_N_months.query(
-            in_time_interval_column_name + " >= " + str(
-                in_end_month - 2) + " and " + in_time_interval_column_name + " <=" + str(in_end_month))
-    elif (in_N_month == 12):
-        df_1st_half_mths_special = in_df_N_months.query(
-            in_time_interval_column_name + " >= " + str(
-                in_end_month - 11) + " and " + in_time_interval_column_name + " <=" + str(in_end_month - 3))
-        df_2nd_half_mths_special = in_df_N_months.query(
-            in_time_interval_column_name + " >= " + str(
-                in_end_month - 2) + " and " + in_time_interval_column_name + " <=" + str(in_end_month))
 
-    df_agg[in_stat_column_name + "_1/N_sum_L" + str(in_N_month)] = df_agg["#sum_curr"] / df_agg["#sum"]
-    df_agg[in_stat_column_name + "_1/N_max_L" + str(in_N_month)] = df_agg["#max_curr"] / df_agg["#max"]
-    df_agg[in_stat_column_name + "_1/N_avg_L" + str(in_N_month)] = df_agg["#avg_curr"] / df_agg["#avg"]
-    df_agg[in_stat_column_name + "_2h/N_sum_L" + str(in_N_month)] = df_agg["#sum_2nd_half"] / df_agg["#sum"]
-    df_agg[in_stat_column_name + "_2h/N_max_L" + str(in_N_month)] = df_agg["#max_2nd_half"] / df_agg["#max"]
-    df_agg[in_stat_column_name + "_2h/N_avg_L" + str(in_N_month)] = df_agg["#avg_2nd_half"] / df_agg["#avg"]
-    df_agg[in_stat_column_name + "_2h/1h_sum_L" + str(in_N_month)] = df_agg["#sum_2nd_half"] / df_agg["#sum_1st_half"]
-    df_agg[in_stat_column_name + "_2h/1h_max_L" + str(in_N_month)] = df_agg["#max_2nd_half"] / df_agg["#max_1st_half"]
-    df_agg[in_stat_column_name + "_2h/1h_avg_L" + str(in_N_month)] = df_agg["#avg_2nd_half"] / df_agg["#avg_1st_half"]
-    if (in_N_month in [3, 9, 12]):
-        df_1st_half_mths_agg_special = df_1st_half_mths_special.groupby(in_key_column_name)[in_stat_column_name].agg(
-            agg_funcs)
-        df_2nd_half_mths_agg_special = df_2nd_half_mths_special.groupby(in_key_column_name)[in_stat_column_name].agg(
-            agg_funcs)
-        df_agg = df_agg.merge(df_1st_half_mths_agg_special, how="left", on=in_key_column_name, validate="one_to_one",
-                              suffixes=["", "_1st_half_special_L" + str(in_N_month)])
-        df_agg = df_agg.merge(df_2nd_half_mths_agg_special, how="left", on=in_key_column_name, validate="one_to_one",
-                              suffixes=["", "_2nd_half_special_L" + str(in_N_month)])
-        df_agg[in_stat_column_name + "_2h/1h_sum_special_L" + str(in_N_month)] = df_agg["#sum_2nd_half_special_L" + str(
-            in_N_month)] / df_agg["#sum_1st_half_special_L" + str(in_N_month)]
-        df_agg[in_stat_column_name + "_2h/1h_max_special_L" + str(in_N_month)] = df_agg["#max_2nd_half_special_L" + str(
-            in_N_month)] / df_agg["#max_1st_half_special_L" + str(in_N_month)]
-        df_agg[in_stat_column_name + "_2h/1h_avg_special_L" + str(in_N_month)] = df_agg["#avg_2nd_half_special_L" + str(
-            in_N_month)] / df_agg["#avg_1st_half_special_L" + str(in_N_month)]
+    dict_result_dic = dict()
+    i_dict_key_id = in_dic_start_id
+    for month_item in months_loop:
+        minus_1st_half_mths_start = in_N_month - 1
+        minus_1st_half_mths_end = in_N_month - month_item[1]
+        minus_2nd_half_mths_start = month_item[0] - 1
+        for func_name in agg_funcs_str:
+            func_tuple = ("#" + func_name, eval(func_name))
+            dict_result_dic[i_dict_key_id] = (
+                in_stat_column_name, in_end_month, in_N_month, func_name, month_item[0], month_item[1])
+            i_dict_key_id += 1
+            df_1st_half_mths = in_df_N_months.query(
+                in_time_interval_column_name + " >= " + str(
+                    in_end_month - minus_1st_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
+                    in_end_month - minus_1st_half_mths_end))
+            df_2nd_half_mths = in_df_N_months.query(
+                in_time_interval_column_name + " >= " + str(
+                    in_end_month - minus_2nd_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
+                    in_end_month))
+            df_1st_half_mths_agg = df_1st_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
+            df_2nd_half_mths_agg = df_2nd_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
+            df_all_agg = in_df_N_months.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
 
-    df_result_agg = df_agg.filter(regex="^[^#]", axis=1)
+            df_agg3 = df_all_agg.merge(df_1st_half_mths_agg, how="left", on=in_key_column_name, validate="one_to_one",
+                                       suffixes=["", "_1st_half"])
+            df_agg = df_agg3.merge(df_2nd_half_mths_agg, how="left", on=in_key_column_name, validate="one_to_one",
+                                   suffixes=["", "_2nd_half"])
+            df_result_agg[
+                in_stat_column_name + "_" + str(month_item[0]) + "/" + str(month_item[1]) + "_"+ func_name + "_L" + str(
+                    in_N_month)] = df_agg[func_tuple[0] + "_2nd_half"] / df_agg[func_tuple[0] + "_1st_half"]
 
-    return df_result_agg
+    # if (in_N_month in [3, 9, 12]):
+    #     if (in_N_month == 3):
+    #         minus_2nd_months = 1
+    #         minus_1st_months = 2
+    #     elif (in_N_month == 9):
+    #         minus_2nd_months = 3
+    #         minus_1st_months = 6
+    #     elif (in_N_month == 12):
+    #         minus_2nd_months = 3
+    #         minus_1st_months = 9
+    #     df_1st_half_mths_special = in_df_N_months.query(
+    #         in_time_interval_column_name + " >= " + str(
+    #             in_end_month - 2) + " and " + in_time_interval_column_name + " <=" + str(in_end_month - 1))
+    #     df_2nd_half_mths_special = in_df_N_months.query(in_time_interval_column_name + " == " + str(in_end_month))
+    #     df_1st_half_mths_agg_special = df_1st_half_mths_special.groupby(in_key_column_name)[in_stat_column_name].agg(
+    #         agg_funcs)
+    #     df_2nd_half_mths_agg_special = df_2nd_half_mths_special.groupby(in_key_column_name)[in_stat_column_name].agg(
+    #         agg_funcs)
+    #     df_agg = df_agg.merge(df_1st_half_mths_agg_special, how="left", on=in_key_column_name, validate="one_to_one",
+    #                           suffixes=["", "_1st_half_special_L" + str(in_N_month)])
+    #     df_agg = df_agg.merge(df_2nd_half_mths_agg_special, how="left", on=in_key_column_name, validate="one_to_one",
+    #                           suffixes=["", "_2nd_half_special_L" + str(in_N_month)])
+    #
+    #     dict_result_dic[i_dict_key_id] = (
+    #         in_stat_column_name, in_end_month, in_N_month, "np.sum", minus_2nd_months, minus_1st_months)
+    #     i_dict_key_id += 1
+    #     df_agg[in_stat_column_name + "_2h/1h_sum_special_L" + str(in_N_month)] = df_agg["#sum_2nd_half_special_L" + str(
+    #         in_N_month)] / df_agg["#sum_1st_half_special_L" + str(in_N_month)]
+
+    df_result_agg = df_result_agg.filter(regex="^[^#]", axis=1)
+
+    return (dict_result_dic, df_result_agg)
+
 
 # 大于N连续出现最大次数
 def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, in_stat_column_name, in_value_gt_N,

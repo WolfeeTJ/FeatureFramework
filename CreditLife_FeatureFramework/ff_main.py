@@ -127,10 +127,17 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
         for var_month in list_month_combinations:
             dic_start_id = max(dic_result.keys()) + 1
             dic_common_stat, df_common_stat = ff.ff_common_stat(df_filter, in_key_column, in_month_column, var_name,
-                                                month_end, var_month, in_dic_start_id=dic_start_id)
+                                                                month_end, var_month, in_dic_start_id=dic_start_id)
             df_result = df_result.merge(df_common_stat, how="outer", on=[in_key_column],
                                         validate="one_to_one")
             dic_result.update(dic_common_stat)
+
+            dic_start_id = max(dic_result.keys()) + 1
+            dic_period_stat, df_period_stat = ff.ff_time_range_compare_stat(df_filter, in_key_column, in_month_column, var_name,
+                                                                month_end, var_month, in_dic_start_id=dic_start_id)
+            df_result = df_result.merge(df_period_stat, how="outer", on=[in_key_column],
+                                        validate="one_to_one")
+            dic_result.update(dic_period_stat)
     log_cur_time("一般统计结果")
     df_result.index = df_result[in_key_column]
     print(dic_result)
