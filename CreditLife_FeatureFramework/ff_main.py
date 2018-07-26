@@ -88,7 +88,7 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
     log_cur_time("百分比衍生")
 
     dic_start_id = 1
-    dic_result = dict({0: in_datasource_name})
+    dic_result = dict({0: {"dataset": in_datasource_name}})
     df_result_var_pct = df_filter.copy()
     for i_df_conf_pct in range(0, len(df_conf_pct)):
         var_combinations = df_conf_pct.iloc[i_df_conf_pct]["var_combinations"]
@@ -113,7 +113,7 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
     print(df_result_var_pct)
 
     log_cur_time("一般统计")
-    dic_result = dict({0: in_datasource_name})
+    dic_result = dict({0: {"dataset": in_datasource_name}})
     df_result = df_result_var_pct[in_key_column].drop_duplicates().to_frame()
     df_result.index = df_result[in_key_column]
     df_conf_var_gen_base_stat = conf_var_gen_base_stat.query("datasource == '" + in_datasource_name + "'")
@@ -133,10 +133,10 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
             dic_result.update(dic_common_stat)
 
             dic_start_id = max(dic_result.keys()) + 1
-            dic_period_stat, df_period_stat = ff.ff_time_range_compare_stat(df_filter, in_key_column, in_month_column,
-                                                                            var_name,
-                                                                            month_end, var_month,
-                                                                            in_dic_start_id=dic_start_id)
+            dic_period_stat, df_period_stat = ff.ff_period_compare_stat(df_filter, in_key_column, in_month_column,
+                                                                        var_name,
+                                                                        month_end, var_month,
+                                                                        in_dic_start_id=dic_start_id)
             df_result = df_result.merge(df_period_stat, how="outer", on=[in_key_column],
                                         validate="one_to_one")
             dic_result.update(dic_period_stat)
