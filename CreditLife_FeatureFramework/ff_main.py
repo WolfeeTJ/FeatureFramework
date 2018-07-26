@@ -182,6 +182,7 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
             dic_result.update(dic_period_stat)
 
     log_cur_time("连续出现/连续增加 结果")
+    print(dic_result)
     print(df_result)
 
     log_cur_time("分段分布")
@@ -197,17 +198,24 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
         for var_month in list_month_combinations:
+            dic_start_id = max(dic_result.keys()) + 1
             if (~ np.isnan(bin_by_loc)):
-                df_result_bin_loc = ff.ff_bin_distribution_by_loc(df_result_var_pct, in_key_column, var_name,
-                                                                  bin_by_loc,
-                                                                  in_month_column, month_end, var_month)
+                dic_result_bin, df_result_bin_loc = ff.ff_bin_distribution_by_loc(df_result_var_pct, in_key_column,
+                                                                                  var_name,
+                                                                                  bin_by_loc,
+                                                                                  in_month_column, month_end, var_month,
+                                                                                  in_dic_start_id=dic_start_id)
                 df_result = df_result.merge(df_result_bin_loc, left_index=True, right_index=True)
             if (~ np.isnan(bin_by_val)):
-                df_result_bin_val = ff.ff_bin_distribution_by_val(df_result_var_pct, in_key_column, var_name,
-                                                                  bin_by_val,
-                                                                  in_month_column, month_end, var_month)
+                dic_result_bin, df_result_bin_val = ff.ff_bin_distribution_by_val(df_result_var_pct, in_key_column,
+                                                                                  var_name,
+                                                                                  bin_by_val,
+                                                                                  in_month_column, month_end, var_month,
+                                                                                  in_dic_start_id=dic_start_id)
                 df_result = df_result.merge(df_result_bin_val, left_index=True, right_index=True)
+            dic_result.update(dic_result_bin)
     log_cur_time("分段分布 结果")
+    print(dic_result)
     print(df_result)
 
     log_cur_time("字符分布")

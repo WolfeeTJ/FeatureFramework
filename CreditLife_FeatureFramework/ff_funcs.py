@@ -360,8 +360,16 @@ def ff_bin_distribution_by_loc(in_dataframe, in_key_column_name, in_bin_value_co
         agg_funcs[dfsort_locbins.values[i - 1]] = (
             (in_bin_value_column + "_ge_cnt_bin" + str(dfsort_locbins.values[i - 1]) + "_L" + str(in_N_month),
              lambda x, y=i: np.sum(x >= y) / np.size(x)))
-    df_result_bin_loc = df_groupby_bin_loc.agg(agg_funcs.values())
-    return df_result_bin_loc
+
+    dict_result_dic = dict()
+    i_dict_key_id = in_dic_start_id
+    for k in agg_funcs.keys():
+        dict_result_dic[i_dict_key_id] = (
+                in_bin_value_column, in_end_month, in_N_month, k)
+        i_dict_key_id += 1
+        df_result_bin_loc = df_groupby_bin_loc.agg([agg_funcs[k]])
+
+    return (dict_result_dic, df_result_bin_loc)
 
 
 # 按给定data frame，以max - min分段，统计各key在分段内的比例
@@ -374,14 +382,21 @@ def ff_bin_distribution_by_val(in_dataframe, in_key_column_name, in_bin_value_co
     dfsort = in_dataframe.query(cond_filter_months).sort_values(by=in_bin_value_column)
     dfsort_valbins = np.linspace(dfsort[in_bin_value_column].min(), dfsort[in_bin_value_column].max(), in_bin_N + 1)
     # dfsort_valbins[0] = dfsort_valbins[0] - 1  # include the first elem in first bin
-    dfsort["bin_val"] = np.digitize(dfsort[in_bin_value_column], dfsort_valbins, right=True)
+    dfsort["bin_val"] = np.digitize(dfsort[in_bin_value_column], dfsort_valbins)
     df_groupby_bin_val = dfsort.groupby(in_key_column_name)["bin_val"]
-    agg_funcs = []
+    agg_funcs = dict()
     for i in range(1, dfsort_valbins.size):
-        agg_funcs += [(in_bin_value_column + "_ge_val_bin" + str(dfsort_valbins[i - 1]) + "_L" + str(in_N_month),
-                       lambda x, y=i: np.sum(x >= y) / np.size(x))]
-    df_result_bin_val = df_groupby_bin_val.agg(agg_funcs)
-    return df_result_bin_val
+        agg_funcs[dfsort_valbins[i - 1]] = (in_bin_value_column + "_ge_val_bin" + str(dfsort_valbins[i - 1]) + "_L" + str(in_N_month),
+                       lambda x, y=i: np.sum(x >= y) / np.size(x))
+
+    dict_result_dic = dict()
+    i_dict_key_id = in_dic_start_id
+    for k in agg_funcs.keys():
+        dict_result_dic[i_dict_key_id] = (
+            in_bin_value_column, in_end_month, in_N_month, k)
+        i_dict_key_id += 1
+        df_result_bin_val = df_groupby_bin_val.agg([agg_funcs[k]])
+    return (dict_result_dic, df_result_bin_val)
 
 
 # 对于字符型字段，统计各值出现的数量和比例
