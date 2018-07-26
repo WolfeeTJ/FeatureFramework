@@ -228,10 +228,13 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
         for var_month in list_month_combinations:
-            df_result_dummy = ff.ff_category_cnt_pct(df_result_var_pct, in_key_column, var_name,
-                                                     in_month_column, month_end, var_month)
-            df_result = df_result.merge(df_result_dummy, left_index=True, right_index=True)
+            dic_start_id = max(dic_result.keys()) + 1
+            dic_result_dummy, df_result_dummy = ff.ff_category_cnt_pct(df_result_var_pct, in_key_column, var_name,
+                                                     in_month_column, month_end, var_month, in_dic_start_id=dic_start_id)
+            df_result = df_result.merge(df_result_dummy, how="left", left_index=True, right_index=True)
+            dic_result.update(dic_result_dummy)
     log_cur_time("字符分布 结果")
+    print(dic_result)
     print(df_result)
 
     log_cur_time("最终结果")

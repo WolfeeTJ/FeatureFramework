@@ -457,10 +457,38 @@ def ff_category_cnt_pct(in_dataframe, in_key_column_name, in_stat_column_name, i
         in_end_month) + " and " + in_time_interval_column + " >= " + str(
         in_end_month - in_N_month + 1)
     df_last_N_months = in_dataframe.query(cond_filter_months)
-    pd_dummy = pd.get_dummies(df_last_N_months[in_stat_column_name], prefix=in_stat_column_name)
+    pd_dummy = pd.get_dummies(df_last_N_months[in_stat_column_name])
+    col_list = pd_dummy.columns
     pd_dummy[in_key_column_name] = in_dataframe[in_key_column_name]
     pd_dummy_groupby = pd_dummy.groupby(in_key_column_name)
-    pd_dummy_result_cnt = pd_dummy_groupby.sum().add_suffix("_cnt_L" + str(in_N_month))
-    pd_dummy_result_pct = pd_dummy_groupby.mean().add_suffix("_pct_L" + str(in_N_month))
-    pd_dummy_result = pd_dummy_result_cnt.merge(pd_dummy_result_pct, left_index=True, right_index=True)
-    return pd_dummy_result
+    pd_dummy_result = in_dataframe[in_key_column_name].drop_duplicates().to_frame()
+    dict_result_dic = dict()
+    i_dict_key_id = in_dic_start_id
+    for col_name in col_list:
+        dict_result_dic[i_dict_key_id] = {
+            "module": "ff_category_cnt_pct",
+            "key_column": in_key_column_name,
+            "month_column": in_time_interval_column,
+            "base_month": in_end_month,
+            "value_column": in_stat_column_name,
+            "func_name": "cnt",
+            "N_Months": in_N_month,
+            "category_value": col_name}
+        i_dict_key_id += 1
+        df_dummy_cnt_result = pd_dummy_groupby[col_name].sum()
+        pd_dummy_result[in_stat_column_name + "_" + col_name + "_cnt"] = df_dummy_cnt_result
+
+        dict_result_dic[i_dict_key_id] = {
+            "module": "ff_category_cnt_pct",
+            "key_column": in_key_column_name,
+            "month_column": in_time_interval_column,
+            "base_month": in_end_month,
+            "value_column": in_stat_column_name,
+            "func_name": "pct",
+            "N_Months": in_N_month,
+            "category_value": col_name}
+        i_dict_key_id += 1
+        df_dummy_pct_result = pd_dummy_groupby[col_name].mean()
+        pd_dummy_result[in_stat_column_name + "_" + col_name + "_pct"] = df_dummy_pct_result
+
+    return (dict_result_dic, pd_dummy_result)
