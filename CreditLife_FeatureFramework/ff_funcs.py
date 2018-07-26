@@ -194,7 +194,6 @@ def ff_time_range_compare_stat(in_dataframe, in_key_column_name, in_time_interva
     months_loop = set([(1, in_N_month), (minus_2nd_months, in_N_month), (minus_2nd_months, minus_1st_months)])
 
     # agg_funcs = [("#sum", np.sum), ("#max", np.max), ("#avg", np.mean)]
-    agg_funcs = []
     agg_funcs_str = in_agg_funcs_str
     agg_funcs_str = ["np.sum", "np.max", "np.mean", ]
 
@@ -223,44 +222,55 @@ def ff_time_range_compare_stat(in_dataframe, in_key_column_name, in_time_interva
                     in_end_month))
             df_1st_half_mths_agg = df_1st_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
             df_2nd_half_mths_agg = df_2nd_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
-            df_all_agg = in_df_N_months.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
-
-            df_agg3 = df_all_agg.merge(df_1st_half_mths_agg, how="left", on=in_key_column_name, validate="one_to_one",
-                                       suffixes=["", "_1st_half"])
-            df_agg = df_agg3.merge(df_2nd_half_mths_agg, how="left", on=in_key_column_name, validate="one_to_one",
-                                   suffixes=["", "_2nd_half"])
+            df_agg = df_2nd_half_mths_agg.merge(df_1st_half_mths_agg, how="outer", on=in_key_column_name,
+                                                validate="one_to_one",
+                                                suffixes=["_2nd_half", "_1st_half"])
             df_result_agg[
-                in_stat_column_name + "_" + str(month_item[0]) + "/" + str(month_item[1]) + "_"+ func_name + "_L" + str(
+                in_stat_column_name + "_" + str(month_item[0]) + "/" + str(
+                    month_item[1]) + "_" + func_name + "_L" + str(
                     in_N_month)] = df_agg[func_tuple[0] + "_2nd_half"] / df_agg[func_tuple[0] + "_1st_half"]
 
-    # if (in_N_month in [3, 9, 12]):
-    #     if (in_N_month == 3):
-    #         minus_2nd_months = 1
-    #         minus_1st_months = 2
-    #     elif (in_N_month == 9):
-    #         minus_2nd_months = 3
-    #         minus_1st_months = 6
-    #     elif (in_N_month == 12):
-    #         minus_2nd_months = 3
-    #         minus_1st_months = 9
-    #     df_1st_half_mths_special = in_df_N_months.query(
-    #         in_time_interval_column_name + " >= " + str(
-    #             in_end_month - 2) + " and " + in_time_interval_column_name + " <=" + str(in_end_month - 1))
-    #     df_2nd_half_mths_special = in_df_N_months.query(in_time_interval_column_name + " == " + str(in_end_month))
-    #     df_1st_half_mths_agg_special = df_1st_half_mths_special.groupby(in_key_column_name)[in_stat_column_name].agg(
-    #         agg_funcs)
-    #     df_2nd_half_mths_agg_special = df_2nd_half_mths_special.groupby(in_key_column_name)[in_stat_column_name].agg(
-    #         agg_funcs)
-    #     df_agg = df_agg.merge(df_1st_half_mths_agg_special, how="left", on=in_key_column_name, validate="one_to_one",
-    #                           suffixes=["", "_1st_half_special_L" + str(in_N_month)])
-    #     df_agg = df_agg.merge(df_2nd_half_mths_agg_special, how="left", on=in_key_column_name, validate="one_to_one",
-    #                           suffixes=["", "_2nd_half_special_L" + str(in_N_month)])
-    #
-    #     dict_result_dic[i_dict_key_id] = (
-    #         in_stat_column_name, in_end_month, in_N_month, "np.sum", minus_2nd_months, minus_1st_months)
-    #     i_dict_key_id += 1
-    #     df_agg[in_stat_column_name + "_2h/1h_sum_special_L" + str(in_N_month)] = df_agg["#sum_2nd_half_special_L" + str(
-    #         in_N_month)] / df_agg["#sum_1st_half_special_L" + str(in_N_month)]
+            if (in_N_month in [3, 9, 12]):
+                if (in_N_month == 3):
+                    minus_2nd_months = 1
+                    minus_1st_months = 2
+                elif (in_N_month == 9):
+                    minus_2nd_months = 3
+                    minus_1st_months = 6
+                elif (in_N_month == 12):
+                    minus_2nd_months = 3
+                    minus_1st_months = 9
+                minus_1st_half_mths_start = in_N_month - 1
+                minus_1st_half_mths_end = in_N_month - minus_2nd_months
+                minus_2nd_half_mths_start = minus_2nd_months - 1
+                df_1st_half_mths_special = in_df_N_months.query(
+                    in_time_interval_column_name + " >= " + str(
+                        in_end_month - minus_1st_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
+                        in_end_month - minus_1st_half_mths_end))
+                df_2nd_half_mths_special = in_df_N_months.query(
+                    in_time_interval_column_name + " >= " + str(
+                        in_end_month - minus_2nd_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
+                        in_end_month))
+                df_1st_half_mths_agg_special = df_1st_half_mths_special.groupby(in_key_column_name)[
+                    in_stat_column_name].agg(
+                    [func_tuple])
+                df_2nd_half_mths_agg_special = df_2nd_half_mths_special.groupby(in_key_column_name)[
+                    in_stat_column_name].agg(
+                    [func_tuple])
+                df_agg = df_2nd_half_mths_agg_special.merge(df_1st_half_mths_agg_special, how="outer",
+                                                            on=in_key_column_name,
+                                                            validate="one_to_one",
+                                                            suffixes=["_2nd_half_special_L" + str(in_N_month),
+                                                                      "_1st_half_special_L" + str(in_N_month)])
+
+                dict_result_dic[i_dict_key_id] = (
+                    in_stat_column_name, in_end_month, in_N_month, func_name, minus_2nd_months, minus_1st_months)
+                i_dict_key_id += 1
+                df_result_agg[
+                    in_stat_column_name + "_" + str(minus_2nd_months) + "/" + str(
+                        minus_1st_months) + "_" + func_name + "_L" + str(
+                        in_N_month)] = df_agg[func_tuple[0] + "_2nd_half_special_L" + str(in_N_month)] / df_agg[
+                    func_tuple[0] + "_1st_half_special_L" + str(in_N_month)]
 
     df_result_agg = df_result_agg.filter(regex="^[^#]", axis=1)
 
@@ -291,7 +301,8 @@ def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, 
     # dfjoin.groupby(["customer","gt_N"])["not_eq_cum"].value_counts()[df_value_count.index.get_level_values(1)==True].groupby(level=0).max()
     df_result_continues_gt_N = dfjoin.query("gt_N == True").groupby(in_key_column_name)[
         "continue_gt_cum"].value_counts().groupby(level=0).max()
-    return df_result_continues_gt_N
+    dic_result = dict({in_dic_start_id: (in_stat_column_name, "continue_show", in_N_month, in_value_gt_N)})
+    return (dic_result, df_result_continues_gt_N)
 
 
 # 连续增加，且大于N，最大次数
@@ -326,7 +337,8 @@ def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_colu
         "continue_inc_cum"].value_counts().groupby(level=0).max()
     df_key = in_dataframe[in_key_column_name].drop_duplicates().sort_values()
     df_result_continues_gt_N_inc = df_result_continues_gt_N_inc.reindex(df_key).fillna(0).astype(int)
-    return df_result_continues_gt_N_inc
+    dic_result = dict({in_dic_start_id: (in_stat_column_name, "continue_inc", in_N_month, in_value_continue_inc_gt_N)})
+    return (dic_result, df_result_continues_gt_N_inc)
 
 
 # 按给定data frame，以数量分段，统计各key在分段内的比例
@@ -339,15 +351,16 @@ def ff_bin_distribution_by_loc(in_dataframe, in_key_column_name, in_bin_value_co
     dfsort = in_dataframe.query(cond_filter_months).sort_values(by=in_bin_value_column)
     dfsort_locbins_loc = np.linspace(0, dfsort[in_bin_value_column].count() - 1, in_bin_N + 1)
     dfsort_locbins = dfsort[in_bin_value_column].iloc[pd.Index(dfsort_locbins_loc)]
-    dfsort_locbins.iloc[0] = dfsort_locbins.iloc[0] - 1  # include the first elem in first bin
+    # dfsort_locbins.iloc[0] = dfsort_locbins.iloc[0] - 1  # include the first elem in first bin
 
-    dfsort["bin_loc"] = np.digitize(dfsort[in_bin_value_column], dfsort_locbins, right=True)
+    dfsort["bin_loc"] = np.digitize(dfsort[in_bin_value_column], dfsort_locbins)
     df_groupby_bin_loc = dfsort.groupby(in_key_column_name)["bin_loc"]
-    agg_funcs = []
+    agg_funcs = dict()
     for i in range(1, dfsort_locbins.size):
-        agg_funcs += [(in_bin_value_column + "_ge_cnt_bin" + str(i) + "_L" + str(in_N_month),
-                       lambda x, y=i: np.sum(x >= y) / np.size(x))]
-    df_result_bin_loc = df_groupby_bin_loc.agg(agg_funcs)
+        agg_funcs[dfsort_locbins.values[i - 1]] = (
+            (in_bin_value_column + "_ge_cnt_bin" + str(dfsort_locbins.values[i - 1]) + "_L" + str(in_N_month),
+             lambda x, y=i: np.sum(x >= y) / np.size(x)))
+    df_result_bin_loc = df_groupby_bin_loc.agg(agg_funcs.values())
     return df_result_bin_loc
 
 
@@ -360,12 +373,12 @@ def ff_bin_distribution_by_val(in_dataframe, in_key_column_name, in_bin_value_co
         in_end_month - in_N_month + 1)
     dfsort = in_dataframe.query(cond_filter_months).sort_values(by=in_bin_value_column)
     dfsort_valbins = np.linspace(dfsort[in_bin_value_column].min(), dfsort[in_bin_value_column].max(), in_bin_N + 1)
-    dfsort_valbins[0] = dfsort_valbins[0] - 1  # include the first elem in first bin
+    # dfsort_valbins[0] = dfsort_valbins[0] - 1  # include the first elem in first bin
     dfsort["bin_val"] = np.digitize(dfsort[in_bin_value_column], dfsort_valbins, right=True)
     df_groupby_bin_val = dfsort.groupby(in_key_column_name)["bin_val"]
     agg_funcs = []
     for i in range(1, dfsort_valbins.size):
-        agg_funcs += [(in_bin_value_column + "_ge_val_bin" + str(i) + "_L" + str(in_N_month),
+        agg_funcs += [(in_bin_value_column + "_ge_val_bin" + str(dfsort_valbins[i - 1]) + "_L" + str(in_N_month),
                        lambda x, y=i: np.sum(x >= y) / np.size(x))]
     df_result_bin_val = df_groupby_bin_val.agg(agg_funcs)
     return df_result_bin_val

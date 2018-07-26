@@ -133,8 +133,10 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
             dic_result.update(dic_common_stat)
 
             dic_start_id = max(dic_result.keys()) + 1
-            dic_period_stat, df_period_stat = ff.ff_time_range_compare_stat(df_filter, in_key_column, in_month_column, var_name,
-                                                                month_end, var_month, in_dic_start_id=dic_start_id)
+            dic_period_stat, df_period_stat = ff.ff_time_range_compare_stat(df_filter, in_key_column, in_month_column,
+                                                                            var_name,
+                                                                            month_end, var_month,
+                                                                            in_dic_start_id=dic_start_id)
             df_result = df_result.merge(df_period_stat, how="outer", on=[in_key_column],
                                         validate="one_to_one")
             dic_result.update(dic_period_stat)
@@ -156,24 +158,29 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
         for var_month in list_month_combinations:
+            dic_start_id = max(dic_result.keys()) + 1
             if (continue_show_or_inc == "show"):
-                s = ff.ff_continue_gt_N(df_result_var_pct,
-                                        in_key_column,
-                                        in_month_column,
-                                        var_name,
-                                        threshold_value,
-                                        month_end,
-                                        var_month)
+                d, s = ff.ff_continue_gt_N(df_result_var_pct,
+                                           in_key_column,
+                                           in_month_column,
+                                           var_name,
+                                           threshold_value,
+                                           month_end,
+                                           var_month, in_dic_start_id=dic_start_id)
+                print(d)
                 df_result[var_name + "_continu_gt_show_" + str(var_month)] = s
             elif (continue_show_or_inc == "inc"):
-                s = ff.ff_continue_inc_gt_N(df_result_var_pct,
-                                            in_key_column,
-                                            in_month_column,
-                                            var_name,
-                                            threshold_value,
-                                            month_end,
-                                            var_month)
+                d, s = ff.ff_continue_inc_gt_N(df_result_var_pct,
+                                               in_key_column,
+                                               in_month_column,
+                                               var_name,
+                                               threshold_value,
+                                               month_end,
+                                               var_month, in_dic_start_id=dic_start_id)
+                print(d)
                 df_result[var_name + "_continu_gt_inc_" + str(var_month)] = s
+            dic_result.update(dic_period_stat)
+
     log_cur_time("连续出现/连续增加 结果")
     print(df_result)
 
