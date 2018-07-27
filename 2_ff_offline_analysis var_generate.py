@@ -20,7 +20,7 @@ for i in range(0, len(configfile)):
     month_start = configfile.iloc[i]["month_start"]
     month_end = configfile.iloc[i]["month_end"]
     in_where = configfile.iloc[i]["where"]
-    dic_result_tmp, df_result_tmp = ff.ff_main(datasource, key_col, month_col, month_start, month_end, in_where)
+    dic_result_tmp, df_result_tmp = ff.ff_offline_analysis(datasource, key_col, month_col, month_start, month_end, in_where)
     print("文件： " + datasource)
     print(df_result_tmp)
     dic_new = dict()

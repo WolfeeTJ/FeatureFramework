@@ -65,7 +65,7 @@ def log_cur_time(in_str=None):
     print(nowTime + " " + in_str)
 
 
-def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, in_end_month, in_where):
+def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_start_month, in_end_month, in_where):
     in_dataframe = pd.read_table("data/" + in_datasource_name + ".txt")
 
     # 1.指定时间周期（输入项1）（1）最近N个周期内
@@ -113,7 +113,7 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
     print(df_result_var_pct)
 
     log_cur_time("一般统计")
-    dic_result = dict({0: {"dataset": in_datasource_name}})
+    # dic_result = dict({0: {"dataset": in_datasource_name}})
     df_result = df_result_var_pct[in_key_column].drop_duplicates().to_frame()
     df_result.index = df_result[in_key_column]
     df_conf_var_gen_base_stat = conf_var_gen_base_stat.query("datasource == '" + in_datasource_name + "'")
