@@ -459,9 +459,10 @@ def ff_category_cnt_pct(in_dataframe, in_key_column_name, in_stat_column_name, i
     df_last_N_months = in_dataframe.query(cond_filter_months)
     pd_dummy = pd.get_dummies(df_last_N_months[in_stat_column_name])
     col_list = pd_dummy.columns
-    pd_dummy[in_key_column_name] = in_dataframe[in_key_column_name]
+    pd_dummy[in_key_column_name] = df_last_N_months[in_key_column_name]
     pd_dummy_groupby = pd_dummy.groupby(in_key_column_name)
     pd_dummy_result = in_dataframe[in_key_column_name].drop_duplicates().to_frame()
+    pd_dummy_result.index = pd_dummy_result[in_key_column_name]
     dict_result_dic = dict()
     i_dict_key_id = in_dic_start_id
     for col_name in col_list:
