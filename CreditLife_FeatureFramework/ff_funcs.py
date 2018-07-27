@@ -72,7 +72,7 @@ def ff_check_total_bin_distribution_by_val(in_dataframe, in_bin_value_column):
 # 分子（变量A+变量B+……）/分母（变量A+变量B+变量C……）（分子、分母指定各自的变量范围，作排列组合，不输出分子项等于分母项的结果）
 
 def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column, in_pct_column_lists,
-                       in_rolling_months, in_dic_start_id):
+                       in_N_month, in_dic_start_id):
     # 排列组合分子
     column_combinations = []
     import itertools
@@ -93,11 +93,11 @@ def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column
                     "month_column": in_time_interval_column,
                     "numerator": column_frame.at[l, "l"],
                     "denominator": column_frame.at[l, "l"] + j,
-                    "N_Months": in_rolling_months}
+                    "N_Months": str(in_N_month)}
                 i_dict_key_id += 1
 
     df_pct_var = in_dataframe.groupby(in_key_column_name)[in_pct_column_lists + [in_time_interval_column]].rolling(
-        in_rolling_months, on=in_time_interval_column).sum()
+        in_N_month, on=in_time_interval_column).sum()
     # df_pct_var
     for k in dict_result_dic.keys():
         tup = dict_result_dic[k]
@@ -158,9 +158,10 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
         dict_result_dic[i_dict_key_id] = {
             "module": "ff_common_stat",
             "key_column": in_key_column_name,
-            "month_column": in_end_month,
+            "month_column": in_time_interval_column_name,
             "value_column": in_stat_column_name,
-            "N_Months": in_N_month,
+            "base_month": str(in_end_month),
+            "N_Months": str(in_N_month),
             "func_name": func_name}
         agg_funcs += [(in_stat_column_name + "_" + func_name + "_L" + str(in_N_month), eval(func_name))]
         i_dict_key_id += 1
@@ -232,9 +233,10 @@ def ff_period_compare_stat(in_dataframe, in_key_column_name, in_time_interval_co
             dict_result_dic[i_dict_key_id] = {
                 "module": "ff_period_compare_stat",
                 "key_column": in_key_column_name,
-                "month_column": in_end_month,
+                "month_column": in_time_interval_column_name,
                 "value_column": in_stat_column_name,
-                "N_Months": in_N_month,
+                "base_month": str(in_end_month),
+                "N_Months": str(in_N_month),
                 "func_name": func_name,
                 "numerator_months": month_item[0],
                 "denomerator_months": month_item[1]}
@@ -285,12 +287,13 @@ def ff_period_compare_stat(in_dataframe, in_key_column_name, in_time_interval_co
                 dict_result_dic[i_dict_key_id] = {
                     "module": "ff_period_compare_stat",
                     "key_column": in_key_column_name,
-                    "month_column": in_end_month,
+                    "month_column": in_time_interval_column_name,
                     "value_column": in_stat_column_name,
-                    "N_Months": in_N_month,
+                    "base_month": str(in_end_month),
+                    "N_Months": str(in_N_month),
                     "func_name": func_name,
-                    "numerator_months": minus_2nd_months,
-                    "denomerator_months": minus_1st_months}
+                    "numerator_months": str(minus_2nd_months),
+                    "denomerator_months": str(minus_1st_months)}
                 i_dict_key_id += 1
                 df_result_agg[
                     in_stat_column_name + "_" + str(minus_2nd_months) + "/" + str(
@@ -330,9 +333,10 @@ def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, 
     dic_result = dict({in_dic_start_id: {
         "module": "ff_continue_gt_N",
         "key_column": in_key_column_name,
-        "month_column": in_end_month,
+        "month_column": in_time_interval_column,
         "value_column": in_stat_column_name,
-        "N_Months": in_N_month,
+        "base_month": str(in_end_month),
+        "N_Months": str(in_N_month),
         "gt_N": in_value_gt_N}})
     return (dic_result, df_result_continues_gt_N)
 
@@ -372,9 +376,10 @@ def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_colu
     dic_result = dict({in_dic_start_id: {
         "module": "ff_continue_inc_gt_N",
         "key_column": in_key_column_name,
-        "month_column": in_end_month,
+        "month_column": in_time_interval_column,
         "value_column": in_stat_column_name,
-        "N_Months": in_N_month,
+        "base_month": str(in_end_month),
+        "N_Months": str(in_N_month),
         "gt_N": in_value_continue_inc_gt_N}})
     return (dic_result, df_result_continues_gt_N_inc)
 
@@ -405,10 +410,11 @@ def ff_bin_distribution_by_loc(in_dataframe, in_key_column_name, in_bin_value_co
         dict_result_dic[i_dict_key_id] = {
             "module": "ff_bin_distribution_by_loc",
             "key_column": in_key_column_name,
-            "month_column": in_end_month,
+            "month_column": in_time_interval_column,
             "value_column": in_bin_value_column,
-            "N_Months": in_N_month,
-            "number_of_bins": in_bin_N,
+            "base_month": str(in_end_month),
+            "N_Months": str(in_N_month),
+            "number_of_bins": str(in_bin_N),
             "bin_value": k}
         i_dict_key_id += 1
         df_result_bin_loc = df_groupby_bin_loc.agg([agg_funcs[k]])
@@ -440,10 +446,11 @@ def ff_bin_distribution_by_val(in_dataframe, in_key_column_name, in_bin_value_co
         dict_result_dic[i_dict_key_id] = {
             "module": "ff_bin_distribution_by_val",
             "key_column": in_key_column_name,
-            "month_column": in_end_month,
+            "month_column": in_time_interval_column,
             "value_column": in_bin_value_column,
-            "N_Months": in_N_month,
-            "number_of_bins": in_bin_N,
+            "base_month": str(in_end_month),
+            "N_Months": str(in_N_month),
+            "number_of_bins": str(in_bin_N),
             "bin_value": k}
         i_dict_key_id += 1
         df_result_bin_val = df_groupby_bin_val.agg([agg_funcs[k]])
@@ -471,10 +478,10 @@ def ff_category_cnt_pct(in_dataframe, in_key_column_name, in_stat_column_name, i
             "module": "ff_category_cnt_pct",
             "key_column": in_key_column_name,
             "month_column": in_time_interval_column,
-            "base_month": in_end_month,
+            "base_month": str(in_end_month),
             "value_column": in_stat_column_name,
             "func_name": "cnt",
-            "N_Months": in_N_month,
+            "N_Months": str(in_N_month),
             "category_value": col_name}
         i_dict_key_id += 1
         df_dummy_cnt_result = pd_dummy_groupby[col_name].sum()
@@ -484,10 +491,10 @@ def ff_category_cnt_pct(in_dataframe, in_key_column_name, in_stat_column_name, i
             "module": "ff_category_cnt_pct",
             "key_column": in_key_column_name,
             "month_column": in_time_interval_column,
-            "base_month": in_end_month,
+            "base_month": str(in_end_month),
             "value_column": in_stat_column_name,
             "func_name": "pct",
-            "N_Months": in_N_month,
+            "N_Months": str(in_N_month),
             "category_value": col_name}
         i_dict_key_id += 1
         df_dummy_pct_result = pd_dummy_groupby[col_name].mean()

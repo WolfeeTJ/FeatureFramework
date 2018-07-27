@@ -241,4 +241,4 @@ def ff_main(in_datasource_name, in_key_column, in_month_column, in_start_month, 
     df_result_t = df_result.T
     print(df_result)
 
-    return df_result
+    return (dic_result, df_result)
