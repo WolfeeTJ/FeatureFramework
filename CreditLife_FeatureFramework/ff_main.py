@@ -242,3 +242,8 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
     print(df_result)
 
     return (dic_result, df_result)
+
+def ff_offline_production(in_datasource_name, in_data_dic_name):
+    dic_input = pd.read_table("conf/offline-production-input-data-dic.txt")
+
+    print()

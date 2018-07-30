@@ -71,46 +71,69 @@ def ff_check_total_bin_distribution_by_val(in_dataframe, in_bin_value_column):
 # （2）百分比衍生：（多变量）
 # 分子（变量A+变量B+……）/分母（变量A+变量B+变量C……）（分子、分母指定各自的变量范围，作排列组合，不输出分子项等于分母项的结果）
 
-def ff_combination_pct(in_dataframe, in_key_column_name, in_time_interval_column, in_pct_column_lists,
-                       in_N_month, in_dic_start_id):
-    # 排列组合分子
-    column_combinations = []
-    import itertools
-    for i in range(len(in_pct_column_lists) - 1):
-        for j in itertools.combinations(in_pct_column_lists, i + 1):
-            column_combinations += [j]
-    # 排列组合分母
-    column_frame = pd.DataFrame({"l": column_combinations})
-    column_frame["r"] = column_frame["l"].map(lambda x: tuple(set(in_pct_column_lists) - set(x)))
+def ff_combination_pct(in_dataframe, kwargs):
+
+    # 取得入参
+    in_key_column_name = kwargs.get("key_column")
+    in_time_interval_column = kwargs.get("month_column")
+    in_pct_column_lists = kwargs.get("in_pct_column_lists")
+    in_N_month = int(kwargs.get("N_Months"))
+    in_dic_start_id = kwargs.get("in_dic_start_id")
+    numerator = kwargs.get("numerator")
+    denominator = kwargs.get("denominator")
+    var_name = kwargs.get("var_name")
+
+    # 要么排列组合，要么计算指定组合，不能同时为空
+    if in_pct_column_lists is None and (numerator is None or denominator is None):
+        raise Exception("in_pct_column_lists and (numerator, denominator) should not both be None")
+
     dict_result_dic = dict()
-    i_dict_key_id = in_dic_start_id
-    for l in range(column_frame.index.size):
-        for i in range(len(column_frame.at[l, "r"]) - 1):
-            for j in itertools.combinations(column_frame.at[l, "r"], i + 1):
-                dict_result_dic[i_dict_key_id] = {
-                    "module": "ff_combination_pct",
-                    "key_column": in_key_column_name,
-                    "month_column": in_time_interval_column,
-                    "numerator": column_frame.at[l, "l"],
-                    "denominator": column_frame.at[l, "l"] + j,
-                    "N_Months": str(in_N_month)}
-                i_dict_key_id += 1
 
-    df_pct_var = in_dataframe.groupby(in_key_column_name)[in_pct_column_lists + [in_time_interval_column]].rolling(
-        in_N_month, on=in_time_interval_column).sum()
-    # df_pct_var
-    for k in dict_result_dic.keys():
-        tup = dict_result_dic[k]
-        numerator = list(tup["numerator"])
-        numerator.sort()
-        denominator = list(tup["denominator"])
-        denominator.sort()
-        df_pct_var["var_" + str(k)] = df_pct_var[list(
-            tup["numerator"])].sum(axis=1) / df_pct_var[list(tup["denominator"])].sum(axis=1)
+    if in_pct_column_lists is not None:
+        # 排列组合分子
+        column_combinations = []
+        import itertools
+        for i in range(len(in_pct_column_lists) - 1):
+            for j in itertools.combinations(in_pct_column_lists, i + 1):
+                column_combinations += [j]
+        # 排列组合分母
+        column_frame = pd.DataFrame({"l": column_combinations})
+        column_frame["r"] = column_frame["l"].map(lambda x: tuple(set(in_pct_column_lists) - set(x)))
+        i_dict_key_id = in_dic_start_id
+        for l in range(column_frame.index.size):
+            for i in range(len(column_frame.at[l, "r"]) - 1):
+                for j in itertools.combinations(column_frame.at[l, "r"], i + 1):
+                    dict_result_dic[i_dict_key_id] = {
+                        "module": "ff_combination_pct",
+                        "key_column": in_key_column_name,
+                        "month_column": in_time_interval_column,
+                        "numerator": column_frame.at[l, "l"],
+                        "denominator": column_frame.at[l, "l"] + j,
+                        "N_Months": str(in_N_month)}
+                    i_dict_key_id += 1
 
-    set_result_columns = set(df_pct_var.columns)
-    set_result_columns -= set(in_pct_column_lists)
-    df_pct_var = df_pct_var.reindex(columns=list(set_result_columns))
+        df_pct_var = in_dataframe.groupby(in_key_column_name)[in_pct_column_lists + [in_time_interval_column]].rolling(
+            in_N_month, on=in_time_interval_column).sum()
+        # df_pct_var
+        for k in dict_result_dic.keys():
+            tup = dict_result_dic[k]
+            numerator = list(tup["numerator"])
+            numerator.sort()
+            denominator = list(tup["denominator"])
+            denominator.sort()
+            df_pct_var["var_" + str(k)] = df_pct_var[list(
+                tup["numerator"])].sum(axis=1) / df_pct_var[list(tup["denominator"])].sum(axis=1)
+
+        set_result_columns = set(df_pct_var.columns)
+        set_result_columns -= set(in_pct_column_lists)
+        df_pct_var = df_pct_var.reindex(columns=list(set_result_columns))
+
+    else: #column list is None, using dict to calculate specific var
+        col_list = set(numerator) | set(denominator) | set([in_time_interval_column])
+        df_pct_var = in_dataframe.groupby(in_key_column_name)[list(col_list)].rolling(
+            in_N_month, on=in_time_interval_column).sum()
+        df_pct_var[var_name] = df_pct_var[numerator].sum(axis=1) / df_pct_var[denominator].sum(axis=1)
+        df_pct_var.reindex(columns=[var_name])
 
     return (dict_result_dic, df_pct_var)
 

@@ -30,6 +30,10 @@ for i in range(0, len(configfile)):
     print(json.dumps(dic_new))
 
     df_dic = pd.read_json(json.dumps(dic_new), orient="index")
+    df_dic.index.name = "var_name"
+    df_dic.to_csv("data/" + datasource + ".dic")
+
+    df_result_tmp.to_csv("data/" + datasource + ".out")
 
 # df_result
 df_result_t = df_result_tmp.T
