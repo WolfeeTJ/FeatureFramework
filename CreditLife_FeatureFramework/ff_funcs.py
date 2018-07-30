@@ -84,8 +84,8 @@ def ff_combination_pct(in_dataframe, kwargs):
     var_name = kwargs.get("var_name")
 
     # 要么排列组合，要么计算指定组合，不能同时为空
-    if in_pct_column_lists is None and (numerator is None or denominator is None):
-        raise Exception("in_pct_column_lists and (numerator, denominator) should not both be None")
+    if in_pct_column_lists is None and (numerator is None or denominator is None or var_name is None):
+        raise Exception("in_pct_column_lists and (numerator, denominator, var_name) should not both be None")
 
     dict_result_dic = dict()
 
@@ -262,7 +262,7 @@ def ff_period_compare_stat(in_dataframe, in_key_column_name, in_time_interval_co
                 "N_Months": str(in_N_month),
                 "func_name": func_name,
                 "numerator_months": month_item[0],
-                "denomerator_months": month_item[1]}
+                "denominator_months": month_item[1]}
             i_dict_key_id += 1
             df_1st_half_mths_agg = df_1st_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
             df_2nd_half_mths_agg = df_2nd_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
@@ -316,7 +316,7 @@ def ff_period_compare_stat(in_dataframe, in_key_column_name, in_time_interval_co
                     "N_Months": str(in_N_month),
                     "func_name": func_name,
                     "numerator_months": str(minus_2nd_months),
-                    "denomerator_months": str(minus_1st_months)}
+                    "denominator_months": str(minus_1st_months)}
                 i_dict_key_id += 1
                 df_result_agg[
                     in_stat_column_name + "_" + str(minus_2nd_months) + "/" + str(

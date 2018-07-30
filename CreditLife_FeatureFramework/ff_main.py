@@ -99,10 +99,16 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
         list_var_combination = s_var_combination.apply(lambda x: x.strip()).tolist()
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        dic_func_pars = df_conf_pct.iloc[i_df_conf_pct].to_dict()
         for var_month in list_month_combinations:
             dic_start_id = max(dic_result.keys()) + 1
-            dic_combination_dic, df_pct_var = ff.ff_combination_pct(df_filter, in_key_column, in_month_column,
-                                                                    list_var_combination, var_month, dic_start_id)
+            dic_func_pars["N_Months"] = var_month
+            dic_func_pars["key_column"] = in_key_column
+            dic_func_pars["month_column"] = in_month_column
+            dic_func_pars["in_pct_column_lists"] = list_var_combination
+            dic_func_pars["in_dic_start_id"] = dic_start_id
+            dic_func_pars["month_column"] = in_month_column
+            dic_combination_dic, df_pct_var = ff.ff_combination_pct(df_filter, dic_func_pars)
             df_result_var_pct = df_result_var_pct.merge(df_pct_var, how="left", on=[in_key_column, in_month_column],
                                                         validate="one_to_one")
             dic_result.update(dic_combination_dic)
