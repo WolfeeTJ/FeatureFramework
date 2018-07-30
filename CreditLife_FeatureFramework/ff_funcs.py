@@ -133,7 +133,9 @@ def ff_combination_pct(in_dataframe, kwargs):
         df_pct_var = in_dataframe.groupby(in_key_column_name)[list(col_list)].rolling(
             in_N_month, on=in_time_interval_column).sum()
         df_pct_var[var_name] = df_pct_var[numerator].sum(axis=1) / df_pct_var[denominator].sum(axis=1)
-        df_pct_var.reindex(columns=[var_name])
+        set_result_columns = set(df_pct_var.columns)
+        set_result_columns -= set(denominator)
+        df_pct_var = df_pct_var.reindex(columns=list(set_result_columns))
 
     return (dict_result_dic, df_pct_var)
 
