@@ -107,7 +107,6 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
             dic_func_pars["month_column"] = in_month_column
             dic_func_pars["in_pct_column_lists"] = list_var_combination
             dic_func_pars["in_dic_start_id"] = dic_start_id
-            dic_func_pars["month_column"] = in_month_column
             dic_combination_dic, df_pct_var = ff.ff_combination_pct(df_filter, dic_func_pars)
             df_result_var_pct = df_result_var_pct.merge(df_pct_var, how="left", on=[in_key_column, in_month_column],
                                                         validate="one_to_one")
@@ -130,19 +129,22 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
         month_end = df_conf_var_gen_base_stat.iloc[i_df_conf_var_gen_base_stat]["month_end"]
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        dic_func_pars = df_conf_var_gen_base_stat.iloc[i_df_conf_var_gen_base_stat].to_dict()
         for var_month in list_month_combinations:
             dic_start_id = max(dic_result.keys()) + 1
-            dic_common_stat, df_common_stat = ff.ff_common_stat(df_filter, in_key_column, in_month_column, var_name,
-                                                                month_end, var_month, in_dic_start_id=dic_start_id)
+            dic_func_pars["N_Months"] = var_month
+            dic_func_pars["key_column"] = in_key_column
+            dic_func_pars["month_column"] = in_month_column
+            dic_func_pars["value_column"] = var_name
+            dic_func_pars["in_dic_start_id"] = dic_start_id
+            dic_func_pars["base_month"] = month_end
+            dic_common_stat, df_common_stat = ff.ff_common_stat(df_filter, dic_func_pars)
             df_result = df_result.merge(df_common_stat, how="outer", on=[in_key_column],
                                         validate="one_to_one")
             dic_result.update(dic_common_stat)
 
             dic_start_id = max(dic_result.keys()) + 1
-            dic_period_stat, df_period_stat = ff.ff_period_compare_stat(df_filter, in_key_column, in_month_column,
-                                                                        var_name,
-                                                                        month_end, var_month,
-                                                                        in_dic_start_id=dic_start_id)
+            dic_period_stat, df_period_stat = ff.ff_period_compare_stat(df_filter, dic_func_pars)
             df_result = df_result.merge(df_period_stat, how="outer", on=[in_key_column],
                                         validate="one_to_one")
             dic_result.update(dic_period_stat)

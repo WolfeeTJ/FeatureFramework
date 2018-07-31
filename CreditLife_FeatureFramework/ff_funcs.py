@@ -141,8 +141,18 @@ def ff_combination_pct(in_dataframe, kwargs):
 
 
 # 基础统计
-def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_name, in_stat_column_name, in_end_month,
-                   in_N_month, in_dic_start_id, in_agg_funcs_str=None):
+def ff_common_stat(in_dataframe, kwargs):
+
+    # 取得入参
+    in_key_column_name = kwargs.get("key_column")
+    in_time_interval_column = kwargs.get("month_column")
+    base_month = kwargs.get("base_month")
+    in_N_month = int(kwargs.get("N_Months"))
+    value_column = kwargs.get("value_column")
+    func_name = kwargs.get("func_name")
+    in_dic_start_id = kwargs.get("in_dic_start_id")
+    var_name = kwargs.get("var_name")
+
     def cnt_gt_0(x):
         return x[x > 0].size
 
@@ -164,171 +174,199 @@ def ff_common_stat(in_dataframe, in_key_column_name, in_time_interval_column_nam
         else:
             return x[x.isna()].size / x.size
 
-    if in_agg_funcs_str is None:
+    dict_result_dic = dict()
+    cond_filter_months = in_time_interval_column + " <= " + str(
+        base_month) + " and " + in_time_interval_column + " >= " + str(
+        base_month - in_N_month + 1)
+    in_df_N_months = in_dataframe.copy().query(cond_filter_months)
+    # df_result = in_df_N_months.groupby(in_key_column_name)[value_column].agg(agg_funcs)
+
+    agg_funcs = []
+    if func_name is None:
         agg_funcs_str = ["np.size", "cnt_gt_0", "pct_gt_0", "np.sum", "np.min", "np.max", "np.average", "np.median",
                          "cnt_isna", "pct_isna"]
+        i_dict_key_id = in_dic_start_id
+        for func_name in agg_funcs_str:
+            dict_result_dic[i_dict_key_id] = {
+                "module": "ff_common_stat",
+                "key_column": in_key_column_name,
+                "month_column": in_time_interval_column,
+                "value_column": value_column,
+                "base_month": str(base_month),
+                "N_Months": str(in_N_month),
+                "func_name": func_name}
+            agg_funcs += [(value_column + "_" + func_name + "_L" + str(in_N_month), eval(func_name))]
+            i_dict_key_id += 1
     else:
-        agg_funcs_str = in_agg_funcs_str
+        agg_funcs = [(var_name, eval(func_name))]
 
-    cond_filter_months = in_time_interval_column_name + " <= " + str(
-        in_end_month) + " and " + in_time_interval_column_name + " >= " + str(
-        in_end_month - in_N_month + 1)
-    in_df_N_months = in_dataframe.copy().query(cond_filter_months)
-    # df_result = in_df_N_months.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
-
-    dict_result_dic = dict()
-    agg_funcs = []
-    i_dict_key_id = in_dic_start_id
-    for func_name in agg_funcs_str:
-        dict_result_dic[i_dict_key_id] = {
-            "module": "ff_common_stat",
-            "key_column": in_key_column_name,
-            "month_column": in_time_interval_column_name,
-            "value_column": in_stat_column_name,
-            "base_month": str(in_end_month),
-            "N_Months": str(in_N_month),
-            "func_name": func_name}
-        agg_funcs += [(in_stat_column_name + "_" + func_name + "_L" + str(in_N_month), eval(func_name))]
-        i_dict_key_id += 1
-    df_result = in_df_N_months.groupby(in_key_column_name)[in_stat_column_name].agg(agg_funcs)
+    df_result = in_df_N_months.groupby(in_key_column_name)[value_column].agg(agg_funcs)
 
     return (dict_result_dic, df_result)
 
 
 # 各时段前后段环比统计
-def ff_period_compare_stat(in_dataframe, in_key_column_name, in_time_interval_column_name, in_stat_column_name,
-                           in_end_month,
-                           in_N_month, in_dic_start_id, in_2nd_months=None, in_1st_months=None,
-                           in_agg_funcs_str=None):
-    # 过去月份变量对比
-    minus_2nd_months = in_2nd_months  # 分子月份数量（从end month往前推的月份数，含end month当月）
-    minus_1st_months = in_1st_months  # 分母月份数量（从end month - N + 1开始，往后推的月份数，含end month - N + 1）
+def ff_period_compare_stat(in_dataframe, kwargs):
 
-    if (in_N_month <= 0):
-        raise Exception("parameter last N months should > 0")
-    elif (in_N_month > 1):
-        if (minus_2nd_months is None and minus_1st_months is None):
-            if ((in_N_month % 2) == 0):
-                minus_2nd_months = in_N_month / 2
-                minus_1st_months = in_N_month / 2
-            else:
-                minus_2nd_months = (in_N_month + 1) / 2
-                minus_1st_months = (in_N_month + 1) / 2
-    else:  # in_N_month==1
-        minus_2nd_months = 1
-        minus_1st_months = 1
-    minus_2nd_months = int(minus_2nd_months)
-    minus_1st_months = int(minus_1st_months)
+    # 取得入参
+    in_key_column_name = kwargs.get("key_column")
+    in_time_interval_column = kwargs.get("month_column")
+    base_month = kwargs.get("base_month")
+    in_N_month = int(kwargs.get("N_Months"))
+    value_column = kwargs.get("value_column")
+    func_name = kwargs.get("func_name")
+    in_dic_start_id = kwargs.get("in_dic_start_id")
+    var_name = kwargs.get("var_name")
+    minus_2nd_months = kwargs.get("numerator_months")  # 分子月份数量（从end month往前推的月份数，含end month当月）
+    minus_1st_months = kwargs.get("denominator_months")  # 分母月份数量（从end month - N + 1开始，往后推的月份数，含end month - N + 1）
 
-    cond_filter_months = in_time_interval_column_name + " <= " + str(
-        in_end_month) + " and " + in_time_interval_column_name + " >= " + str(
-        in_end_month - in_N_month + 1)
+    dict_result_dic = dict()
+    cond_filter_months = in_time_interval_column + " <= " + str(
+        base_month) + " and " + in_time_interval_column + " >= " + str(
+        base_month - in_N_month + 1)
     in_df_N_months = in_dataframe.copy().query(cond_filter_months)
     df_result_agg = in_df_N_months[in_key_column_name].drop_duplicates().to_frame()
     df_result_agg.index = df_result_agg[in_key_column_name]
 
-    # 定义循环月份列表
-    months_loop = set([(1, in_N_month), (minus_2nd_months, in_N_month), (minus_2nd_months, minus_1st_months)])
-
-    agg_funcs_str = in_agg_funcs_str
-    agg_funcs_str = ["np.sum", "np.max", "np.mean", ]
-
-    # special additional cases
-    df_1st_half_mths_special = pd.DataFrame([])
-    df_2nd_half_mths_special = pd.DataFrame([])
-
-    dict_result_dic = dict()
-    i_dict_key_id = in_dic_start_id
-    for month_item in months_loop:
+    if minus_2nd_months is not None and minus_1st_months is not None:
+        func_tuple = ("#" + func_name, eval(func_name))
         minus_1st_half_mths_start = in_N_month - 1
-        minus_1st_half_mths_end = in_N_month - month_item[1]
-        minus_2nd_half_mths_start = month_item[0] - 1
-        df_1st_half_mths = in_df_N_months.query(
-            in_time_interval_column_name + " >= " + str(
-                in_end_month - minus_1st_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
-                in_end_month - minus_1st_half_mths_end))
-        df_2nd_half_mths = in_df_N_months.query(
-            in_time_interval_column_name + " >= " + str(
-                in_end_month - minus_2nd_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
-                in_end_month))
-        agg_funcs = []
-        for func_name in agg_funcs_str:
-            func_tuple = ("#" + func_name, eval(func_name))
-            agg_funcs += [func_tuple]
-            dict_result_dic[i_dict_key_id] = {
-                "module": "ff_period_compare_stat",
-                "key_column": in_key_column_name,
-                "month_column": in_time_interval_column_name,
-                "value_column": in_stat_column_name,
-                "base_month": str(in_end_month),
-                "N_Months": str(in_N_month),
-                "func_name": func_name,
-                "numerator_months": month_item[0],
-                "denominator_months": month_item[1]}
-            i_dict_key_id += 1
-            df_1st_half_mths_agg = df_1st_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
-            df_2nd_half_mths_agg = df_2nd_half_mths.groupby(in_key_column_name)[in_stat_column_name].agg([func_tuple])
-            df_agg = df_2nd_half_mths_agg.merge(df_1st_half_mths_agg, how="outer", on=in_key_column_name,
-                                                validate="one_to_one",
-                                                suffixes=["_2nd_half", "_1st_half"])
-            df_result_agg[
-                in_stat_column_name + "_" + str(month_item[0]) + "/" + str(
-                    month_item[1]) + "_" + func_name + "_L" + str(
-                    in_N_month)] = df_agg[func_tuple[0] + "_2nd_half"] / df_agg[func_tuple[0] + "_1st_half"]
+        minus_1st_half_mths_end = in_N_month - minus_2nd_months
+        minus_2nd_half_mths_start = minus_2nd_months - 1
+        df_1st_half_mths_special = in_df_N_months.query(
+            in_time_interval_column + " >= " + str(
+                base_month - minus_1st_half_mths_start) + " and " + in_time_interval_column + " <=" + str(
+                base_month - minus_1st_half_mths_end))
+        df_2nd_half_mths_special = in_df_N_months.query(
+            in_time_interval_column + " >= " + str(
+                base_month - minus_2nd_half_mths_start) + " and " + in_time_interval_column + " <=" + str(
+                base_month))
+        df_1st_half_mths_agg_special = df_1st_half_mths_special.groupby(in_key_column_name)[
+            value_column].agg(
+            [func_tuple])
+        df_2nd_half_mths_agg_special = df_2nd_half_mths_special.groupby(in_key_column_name)[
+            value_column].agg(
+            [func_tuple])
+        df_agg = df_2nd_half_mths_agg_special.merge(df_1st_half_mths_agg_special, how="outer",
+                                                    on=in_key_column_name,
+                                                    validate="one_to_one",
+                                                    suffixes=["_2nd_half_L" + str(in_N_month),
+                                                              "_1st_half_L" + str(in_N_month)])
+        df_result_agg[var_name] = df_agg[func_tuple[0] + "_2nd_half_L" + str(in_N_month)] / df_agg[
+            func_tuple[0] + "_1st_half_L" + str(in_N_month)]
+    else: # 离线分析，自行构建变量
+        if in_N_month <= 0:
+            raise Exception("parameter last N months should > 0")
+        elif in_N_month > 1:
+            if minus_2nd_months is None and minus_1st_months is None:
+                if (in_N_month % 2) == 0:
+                    minus_2nd_months = in_N_month / 2
+                    minus_1st_months = in_N_month / 2
+                else:
+                    minus_2nd_months = (in_N_month + 1) / 2
+                    minus_1st_months = (in_N_month + 1) / 2
+        else:  # in_N_month==1
+            minus_2nd_months = 1
+            minus_1st_months = 1
+        minus_2nd_months = int(minus_2nd_months)
+        minus_1st_months = int(minus_1st_months)
 
-            if (in_N_month in [3, 9, 12]):
-                if (in_N_month == 3):
-                    minus_2nd_months = 1
-                    minus_1st_months = 2
-                elif (in_N_month == 9):
-                    minus_2nd_months = 3
-                    minus_1st_months = 6
-                elif (in_N_month == 12):
-                    minus_2nd_months = 3
-                    minus_1st_months = 9
-                minus_1st_half_mths_start = in_N_month - 1
-                minus_1st_half_mths_end = in_N_month - minus_2nd_months
-                minus_2nd_half_mths_start = minus_2nd_months - 1
-                df_1st_half_mths_special = in_df_N_months.query(
-                    in_time_interval_column_name + " >= " + str(
-                        in_end_month - minus_1st_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
-                        in_end_month - minus_1st_half_mths_end))
-                df_2nd_half_mths_special = in_df_N_months.query(
-                    in_time_interval_column_name + " >= " + str(
-                        in_end_month - minus_2nd_half_mths_start) + " and " + in_time_interval_column_name + " <=" + str(
-                        in_end_month))
-                df_1st_half_mths_agg_special = df_1st_half_mths_special.groupby(in_key_column_name)[
-                    in_stat_column_name].agg(
-                    [func_tuple])
-                df_2nd_half_mths_agg_special = df_2nd_half_mths_special.groupby(in_key_column_name)[
-                    in_stat_column_name].agg(
-                    [func_tuple])
-                df_agg = df_2nd_half_mths_agg_special.merge(df_1st_half_mths_agg_special, how="outer",
-                                                            on=in_key_column_name,
-                                                            validate="one_to_one",
-                                                            suffixes=["_2nd_half_special_L" + str(in_N_month),
-                                                                      "_1st_half_special_L" + str(in_N_month)])
+        # 定义循环月份列表
+        months_loop = {(1, in_N_month), (minus_2nd_months, in_N_month), (minus_2nd_months, minus_1st_months)}
 
+        agg_funcs_str = ["np.sum", "np.max", "np.mean", ]
+
+        i_dict_key_id = in_dic_start_id
+        for month_item in months_loop:
+            minus_1st_half_mths_start = in_N_month - 1
+            minus_1st_half_mths_end = in_N_month - month_item[1]
+            minus_2nd_half_mths_start = month_item[0] - 1
+            df_1st_half_mths = in_df_N_months.query(
+                in_time_interval_column + " >= " + str(
+                    base_month - minus_1st_half_mths_start) + " and " + in_time_interval_column + " <=" + str(
+                    base_month - minus_1st_half_mths_end))
+            df_2nd_half_mths = in_df_N_months.query(
+                in_time_interval_column + " >= " + str(
+                    base_month - minus_2nd_half_mths_start) + " and " + in_time_interval_column + " <=" + str(
+                    base_month))
+            agg_funcs = []
+            for func_name in agg_funcs_str:
+                func_tuple = ("#" + func_name, eval(func_name))
+                agg_funcs += [func_tuple]
                 dict_result_dic[i_dict_key_id] = {
                     "module": "ff_period_compare_stat",
                     "key_column": in_key_column_name,
-                    "month_column": in_time_interval_column_name,
-                    "value_column": in_stat_column_name,
-                    "base_month": str(in_end_month),
+                    "month_column": in_time_interval_column,
+                    "value_column": value_column,
+                    "base_month": str(base_month),
                     "N_Months": str(in_N_month),
                     "func_name": func_name,
-                    "numerator_months": str(minus_2nd_months),
-                    "denominator_months": str(minus_1st_months)}
+                    "numerator_months": month_item[0],
+                    "denominator_months": month_item[1]}
                 i_dict_key_id += 1
+                df_1st_half_mths_agg = df_1st_half_mths.groupby(in_key_column_name)[value_column].agg([func_tuple])
+                df_2nd_half_mths_agg = df_2nd_half_mths.groupby(in_key_column_name)[value_column].agg([func_tuple])
+                df_agg = df_2nd_half_mths_agg.merge(df_1st_half_mths_agg, how="outer", on=in_key_column_name,
+                                                    validate="one_to_one",
+                                                    suffixes=["_2nd_half", "_1st_half"])
                 df_result_agg[
-                    in_stat_column_name + "_" + str(minus_2nd_months) + "/" + str(
-                        minus_1st_months) + "_" + func_name + "_L" + str(
-                        in_N_month)] = df_agg[func_tuple[0] + "_2nd_half_special_L" + str(in_N_month)] / df_agg[
-                    func_tuple[0] + "_1st_half_special_L" + str(in_N_month)]
+                    value_column + "_" + str(month_item[0]) + "/" + str(
+                        month_item[1]) + "_" + func_name + "_L" + str(
+                        in_N_month)] = df_agg[func_tuple[0] + "_2nd_half"] / df_agg[func_tuple[0] + "_1st_half"]
+
+                if in_N_month in [3, 9, 12]:
+                    if in_N_month == 3:
+                        minus_2nd_months = 1
+                        minus_1st_months = 2
+                    elif in_N_month == 9:
+                        minus_2nd_months = 3
+                        minus_1st_months = 6
+                    elif in_N_month == 12:
+                        minus_2nd_months = 3
+                        minus_1st_months = 9
+                    minus_1st_half_mths_start = in_N_month - 1
+                    minus_1st_half_mths_end = in_N_month - minus_2nd_months
+                    minus_2nd_half_mths_start = minus_2nd_months - 1
+                    df_1st_half_mths_special = in_df_N_months.query(
+                        in_time_interval_column + " >= " + str(
+                            base_month - minus_1st_half_mths_start) + " and " + in_time_interval_column + " <=" + str(
+                            base_month - minus_1st_half_mths_end))
+                    df_2nd_half_mths_special = in_df_N_months.query(
+                        in_time_interval_column + " >= " + str(
+                            base_month - minus_2nd_half_mths_start) + " and " + in_time_interval_column + " <=" + str(
+                            base_month))
+                    df_1st_half_mths_agg_special = df_1st_half_mths_special.groupby(in_key_column_name)[
+                        value_column].agg(
+                        [func_tuple])
+                    df_2nd_half_mths_agg_special = df_2nd_half_mths_special.groupby(in_key_column_name)[
+                        value_column].agg(
+                        [func_tuple])
+                    df_agg = df_2nd_half_mths_agg_special.merge(df_1st_half_mths_agg_special, how="outer",
+                                                                on=in_key_column_name,
+                                                                validate="one_to_one",
+                                                                suffixes=["_2nd_half_special_L" + str(in_N_month),
+                                                                          "_1st_half_special_L" + str(in_N_month)])
+
+                    dict_result_dic[i_dict_key_id] = {
+                        "module": "ff_period_compare_stat",
+                        "key_column": in_key_column_name,
+                        "month_column": in_time_interval_column,
+                        "value_column": value_column,
+                        "base_month": str(base_month),
+                        "N_Months": str(in_N_month),
+                        "func_name": func_name,
+                        "numerator_months": str(minus_2nd_months),
+                        "denominator_months": str(minus_1st_months)}
+                    i_dict_key_id += 1
+                    df_result_agg[
+                        value_column + "_" + str(minus_2nd_months) + "/" + str(
+                            minus_1st_months) + "_" + func_name + "_L" + str(
+                            in_N_month)] = df_agg[func_tuple[0] + "_2nd_half_special_L" + str(in_N_month)] / df_agg[
+                        func_tuple[0] + "_1st_half_special_L" + str(in_N_month)]
 
     df_result_agg = df_result_agg.filter(regex="^[^#]", axis=1)
 
-    return (dict_result_dic, df_result_agg)
+    return dict_result_dic, df_result_agg
 
 
 # 大于N连续出现最大次数
