@@ -370,23 +370,32 @@ def ff_period_compare_stat(in_dataframe, kwargs):
 
 
 # 大于N连续出现最大次数
-def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, in_stat_column_name, in_value_gt_N,
-                     in_end_month,
-                     in_N_month, in_dic_start_id):
+def ff_continue_gt_N(in_dataframe, kwargs):
+
+    # 取得入参
+    in_key_column_name = kwargs.get("key_column")
+    in_time_interval_column = kwargs.get("month_column")
+    base_month = kwargs.get("base_month")
+    in_N_month = int(kwargs.get("N_Months"))
+    value_column = kwargs.get("value_column")
+    threshold_value = kwargs.get("threshold_value")
+    in_dic_start_id = kwargs.get("in_dic_start_id")
+    var_name = kwargs.get("var_name")
+
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
-        in_end_month) + " and " + in_time_interval_column + " >= " + str(
-        in_end_month - in_N_month + 1)
+        base_month) + " and " + in_time_interval_column + " >= " + str(
+        base_month - in_N_month + 1)
     dfleft = in_dataframe.copy().query(cond_filter_months).sort_values(by=[in_key_column_name, in_time_interval_column])
     dfnext = dfleft.copy()
     # TODO: add different interval according to corresponding time interval
     dfnext[in_time_interval_column] = dfleft[in_time_interval_column] + 1
     dfjoin = dfleft.merge(dfnext, how="left", on=[in_time_interval_column, in_key_column_name], validate="one_to_one",
                           suffixes=["", "_l1"])
-    dfjoin[in_stat_column_name + "_l1"] = dfjoin[in_stat_column_name + "_l1"].fillna(-1)
+    dfjoin[value_column + "_l1"] = dfjoin[value_column + "_l1"].fillna(-1)
 
-    dfjoin["gt_N"] = dfjoin[in_stat_column_name] > in_value_gt_N
-    dfjoin["l1_gt_N"] = dfjoin[in_stat_column_name + "_l1"] > in_value_gt_N
+    dfjoin["gt_N"] = dfjoin[value_column] > threshold_value
+    dfjoin["l1_gt_N"] = dfjoin[value_column + "_l1"] > threshold_value
     dfjoin["continue_gt"] = ~(dfjoin["gt_N"] == dfjoin["l1_gt_N"])
     dfjoin["continue_gt_cum"] = dfjoin.groupby(in_key_column_name)["continue_gt"].cumsum()
     # 若将Y/N都统计，则将起加入groupby
@@ -397,21 +406,30 @@ def ff_continue_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, 
         "module": "ff_continue_gt_N",
         "key_column": in_key_column_name,
         "month_column": in_time_interval_column,
-        "value_column": in_stat_column_name,
-        "base_month": str(in_end_month),
+        "value_column": value_column,
+        "base_month": str(base_month),
         "N_Months": str(in_N_month),
-        "gt_N": in_value_gt_N}})
+        "threshold_value": str(threshold_value)}})
     return (dic_result, df_result_continues_gt_N)
 
 
 # 连续增加，且大于N，最大次数
-def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_column, in_stat_column_name,
-                         in_value_continue_inc_gt_N, in_end_month,
-                         in_N_month, in_dic_start_id):
+def ff_continue_inc_gt_N(in_dataframe, kwargs):
+
+    # 取得入参
+    in_key_column_name = kwargs.get("key_column")
+    in_time_interval_column = kwargs.get("month_column")
+    base_month = kwargs.get("base_month")
+    in_N_month = int(kwargs.get("N_Months"))
+    value_column = kwargs.get("value_column")
+    threshold_value = kwargs.get("threshold_value")
+    in_dic_start_id = kwargs.get("in_dic_start_id")
+    var_name = kwargs.get("var_name")
+
     # 预处理
     cond_filter_months = in_time_interval_column + " <= " + str(
-        in_end_month) + " and " + in_time_interval_column + " >= " + str(
-        in_end_month - in_N_month + 1)
+        base_month) + " and " + in_time_interval_column + " >= " + str(
+        base_month - in_N_month + 1)
     dfleft = in_dataframe.copy().query(cond_filter_months).sort_values(by=[in_key_column_name, in_time_interval_column])
     dfnext = dfleft.copy()
     # TODO: add different interval according to corresponding time interval
@@ -421,13 +439,13 @@ def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_colu
     dfnext = dfnext.merge(dfnext2, how="left", on=[in_time_interval_column, in_key_column_name], validate="one_to_one",
                           suffixes=["_l1", "_l2"])
     dfjoin = dfleft.merge(dfnext, how="left", on=[in_time_interval_column, in_key_column_name], validate="one_to_one")
-    dfjoin[in_stat_column_name + "_l1"] = dfjoin[in_stat_column_name + "_l1"].fillna(-1)
-    dfjoin[in_stat_column_name + "_l2"] = dfjoin[in_stat_column_name + "_l2"].fillna(-1)
+    dfjoin[value_column + "_l1"] = dfjoin[value_column + "_l1"].fillna(-1)
+    dfjoin[value_column + "_l2"] = dfjoin[value_column + "_l2"].fillna(-1)
 
-    dfjoin["gt_pre"] = dfjoin[in_stat_column_name] > dfjoin[in_stat_column_name + "_l1"]
-    dfjoin["l1_gt_pre"] = dfjoin[in_stat_column_name + "_l1"] > dfjoin[in_stat_column_name + "_l2"]
-    dfjoin["gt_N"] = dfjoin[in_stat_column_name] > in_value_continue_inc_gt_N
-    dfjoin["l1_gt_N"] = dfjoin[in_stat_column_name + "_l1"] > in_value_continue_inc_gt_N
+    dfjoin["gt_pre"] = dfjoin[value_column] > dfjoin[value_column + "_l1"]
+    dfjoin["l1_gt_pre"] = dfjoin[value_column + "_l1"] > dfjoin[value_column + "_l2"]
+    dfjoin["gt_N"] = dfjoin[value_column] > threshold_value
+    dfjoin["l1_gt_N"] = dfjoin[value_column + "_l1"] > threshold_value
     dfjoin["continue_inc"] = ~(
             (dfjoin["gt_pre"] & dfjoin["gt_N"]) & ((dfjoin["l1_gt_pre"] & dfjoin["l1_gt_N"]) | dfjoin["l1_gt_N"]))
     dfjoin["continue_inc_cum"] = dfjoin.groupby(in_key_column_name)["continue_inc"].cumsum()
@@ -440,10 +458,10 @@ def ff_continue_inc_gt_N(in_dataframe, in_key_column_name, in_time_interval_colu
         "module": "ff_continue_inc_gt_N",
         "key_column": in_key_column_name,
         "month_column": in_time_interval_column,
-        "value_column": in_stat_column_name,
-        "base_month": str(in_end_month),
+        "value_column": value_column,
+        "base_month": str(base_month),
         "N_Months": str(in_N_month),
-        "gt_N": in_value_continue_inc_gt_N}})
+        "threshold_value": str(threshold_value)}})
     return (dic_result, df_result_continues_gt_N_inc)
 
 

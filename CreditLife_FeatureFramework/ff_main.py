@@ -130,14 +130,14 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
         dic_func_pars = df_conf_var_gen_base_stat.iloc[i_df_conf_var_gen_base_stat].to_dict()
+        dic_func_pars["key_column"] = in_key_column
+        dic_func_pars["month_column"] = in_month_column
+        dic_func_pars["value_column"] = var_name
+        dic_func_pars["base_month"] = month_end
         for var_month in list_month_combinations:
             dic_start_id = max(dic_result.keys()) + 1
             dic_func_pars["N_Months"] = var_month
-            dic_func_pars["key_column"] = in_key_column
-            dic_func_pars["month_column"] = in_month_column
-            dic_func_pars["value_column"] = var_name
             dic_func_pars["in_dic_start_id"] = dic_start_id
-            dic_func_pars["base_month"] = month_end
             dic_common_stat, df_common_stat = ff.ff_common_stat(df_filter, dic_func_pars)
             df_result = df_result.merge(df_common_stat, how="outer", on=[in_key_column],
                                         validate="one_to_one")
@@ -165,29 +165,23 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
         threshold_value = df_conf_var_gen_continue_stat.iloc[i_df_conf_var_gen_continue_stat]["threshold_value"]
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        dic_func_pars = df_conf_var_gen_continue_stat.iloc[i_df_conf_var_gen_continue_stat].to_dict()
+        dic_func_pars["key_column"] = in_key_column
+        dic_func_pars["month_column"] = in_month_column
+        dic_func_pars["value_column"] = var_name
+        dic_func_pars["base_month"] = month_end
+        dic_func_pars["threshold_value"] = threshold_value
         for var_month in list_month_combinations:
             dic_start_id = max(dic_result.keys()) + 1
+            dic_func_pars["N_Months"] = var_month
+            dic_func_pars["in_dic_start_id"] = dic_start_id
             if (continue_show_or_inc == "show"):
-                d, s = ff.ff_continue_gt_N(df_result_var_pct,
-                                           in_key_column,
-                                           in_month_column,
-                                           var_name,
-                                           threshold_value,
-                                           month_end,
-                                           var_month, in_dic_start_id=dic_start_id)
-                print(d)
+                d, s = ff.ff_continue_gt_N(df_result_var_pct, dic_func_pars)
                 df_result[var_name + "_continu_gt_show_" + str(var_month)] = s
             elif (continue_show_or_inc == "inc"):
-                d, s = ff.ff_continue_inc_gt_N(df_result_var_pct,
-                                               in_key_column,
-                                               in_month_column,
-                                               var_name,
-                                               threshold_value,
-                                               month_end,
-                                               var_month, in_dic_start_id=dic_start_id)
-                print(d)
+                d, s = ff.ff_continue_inc_gt_N(df_result_var_pct, dic_func_pars)
                 df_result[var_name + "_continu_gt_inc_" + str(var_month)] = s
-            dic_result.update(dic_period_stat)
+            dic_result.update(d)
 
     log_cur_time("连续出现/连续增加 结果")
     print(dic_result)
@@ -238,7 +232,8 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
         for var_month in list_month_combinations:
             dic_start_id = max(dic_result.keys()) + 1
             dic_result_dummy, df_result_dummy = ff.ff_category_cnt_pct(df_result_var_pct, in_key_column, var_name,
-                                                     in_month_column, month_end, var_month, in_dic_start_id=dic_start_id)
+                                                                       in_month_column, month_end, var_month,
+                                                                       in_dic_start_id=dic_start_id)
             df_result = df_result.merge(df_result_dummy, how="left", left_index=True, right_index=True)
             dic_result.update(dic_result_dummy)
     log_cur_time("字符分布 结果")
@@ -250,6 +245,7 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
     print(df_result)
 
     return (dic_result, df_result)
+
 
 def ff_offline_production(in_datasource_name, in_data_dic_name):
     dic_input = pd.read_table("conf/offline-production-input-data-dic.txt")
