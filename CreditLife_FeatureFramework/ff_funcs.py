@@ -72,7 +72,6 @@ def ff_check_total_bin_distribution_by_val(in_dataframe, in_bin_value_column):
 # 分子（变量A+变量B+……）/分母（变量A+变量B+变量C……）（分子、分母指定各自的变量范围，作排列组合，不输出分子项等于分母项的结果）
 
 def ff_combination_pct(in_dataframe, kwargs):
-
     # 取得入参
     in_key_column_name = kwargs.get("key_column")
     in_time_interval_column = kwargs.get("month_column")
@@ -127,7 +126,7 @@ def ff_combination_pct(in_dataframe, kwargs):
         set_result_columns = set(df_pct_var.columns)
         set_result_columns -= set(in_pct_column_lists + [in_time_interval_column])
 
-    else: #column list is None, using dict to calculate specific var
+    else:  # column list is None, using dict to calculate specific var
         col_list = set(numerator) | set(denominator) | set([in_time_interval_column])
         df_pct_var = in_dataframe.groupby(in_key_column_name)[list(col_list)].rolling(
             in_N_month, on=in_time_interval_column).sum()
@@ -142,7 +141,6 @@ def ff_combination_pct(in_dataframe, kwargs):
 
 # 基础统计
 def ff_common_stat(in_dataframe, kwargs):
-
     # 取得入参
     in_key_column_name = kwargs.get("key_column")
     in_time_interval_column = kwargs.get("month_column")
@@ -195,7 +193,7 @@ def ff_common_stat(in_dataframe, kwargs):
                 "base_month": str(base_month),
                 "N_Months": str(in_N_month),
                 "func_name": func_name}
-            agg_funcs += [(value_column + "_" + func_name + "_L" + str(in_N_month), eval(func_name))]
+            agg_funcs += [("var_" + str(i_dict_key_id), eval(func_name))]
             i_dict_key_id += 1
     else:
         agg_funcs = [(var_name, eval(func_name))]
@@ -207,7 +205,6 @@ def ff_common_stat(in_dataframe, kwargs):
 
 # 各时段前后段环比统计
 def ff_period_compare_stat(in_dataframe, kwargs):
-
     # 取得入参
     in_key_column_name = kwargs.get("key_column")
     in_time_interval_column = kwargs.get("month_column")
@@ -255,7 +252,7 @@ def ff_period_compare_stat(in_dataframe, kwargs):
         df_result_agg[var_name] = df_agg[func_tuple[0] + "_2nd_half_L" + str(in_N_month)] / df_agg[
             func_tuple[0] + "_1st_half_L" + str(in_N_month)]
         df_result_agg = df_result_agg.reindex(columns=[var_name])
-    else: # 离线分析，自行构建变量
+    else:  # 离线分析，自行构建变量
         if in_N_month <= 0:
             raise Exception("parameter last N months should > 0")
         elif in_N_month > 1:
@@ -304,16 +301,14 @@ def ff_period_compare_stat(in_dataframe, kwargs):
                     "func_name": func_name,
                     "numerator_months": month_item[0],
                     "denominator_months": month_item[1]}
-                i_dict_key_id += 1
                 df_1st_half_mths_agg = df_1st_half_mths.groupby(in_key_column_name)[value_column].agg([func_tuple])
                 df_2nd_half_mths_agg = df_2nd_half_mths.groupby(in_key_column_name)[value_column].agg([func_tuple])
                 df_agg = df_2nd_half_mths_agg.merge(df_1st_half_mths_agg, how="outer", on=in_key_column_name,
                                                     validate="one_to_one",
                                                     suffixes=["_2nd_half", "_1st_half"])
-                df_result_agg[
-                    value_column + "_" + str(month_item[0]) + "/" + str(
-                        month_item[1]) + "_" + func_name + "_L" + str(
-                        in_N_month)] = df_agg[func_tuple[0] + "_2nd_half"] / df_agg[func_tuple[0] + "_1st_half"]
+                df_result_agg["var_" + str(i_dict_key_id)] = df_agg[func_tuple[0] + "_2nd_half"] / df_agg[
+                    func_tuple[0] + "_1st_half"]
+                i_dict_key_id += 1
 
                 if in_N_month in [3, 9, 12]:
                     if in_N_month == 3:
@@ -358,12 +353,11 @@ def ff_period_compare_stat(in_dataframe, kwargs):
                         "func_name": func_name,
                         "numerator_months": str(minus_2nd_months),
                         "denominator_months": str(minus_1st_months)}
+                    df_result_agg["var_" + str(i_dict_key_id)] = df_agg[func_tuple[0] + "_2nd_half_special_L" + str(
+                        in_N_month)] / df_agg[
+                                                                     func_tuple[0] + "_1st_half_special_L" + str(
+                                                                         in_N_month)]
                     i_dict_key_id += 1
-                    df_result_agg[
-                        value_column + "_" + str(minus_2nd_months) + "/" + str(
-                            minus_1st_months) + "_" + func_name + "_L" + str(
-                            in_N_month)] = df_agg[func_tuple[0] + "_2nd_half_special_L" + str(in_N_month)] / df_agg[
-                        func_tuple[0] + "_1st_half_special_L" + str(in_N_month)]
 
     df_result_agg = df_result_agg.filter(regex="^[^#]", axis=1)
 
@@ -372,7 +366,6 @@ def ff_period_compare_stat(in_dataframe, kwargs):
 
 # 大于N连续出现最大次数
 def ff_continue_gt_N(in_dataframe, kwargs):
-
     # 取得入参
     in_key_column_name = kwargs.get("key_column")
     in_time_interval_column = kwargs.get("month_column")
@@ -416,7 +409,6 @@ def ff_continue_gt_N(in_dataframe, kwargs):
 
 # 连续增加，且大于N，最大次数
 def ff_continue_inc_gt_N(in_dataframe, kwargs):
-
     # 取得入参
     in_key_column_name = kwargs.get("key_column")
     in_time_interval_column = kwargs.get("month_column")
@@ -468,7 +460,6 @@ def ff_continue_inc_gt_N(in_dataframe, kwargs):
 
 # 按给定data frame，以数量分段，统计各key在分段内的比例
 def ff_bin_distribution_by_loc(in_dataframe, kwargs):
-
     # 取得入参
     in_key_column_name = kwargs.get("key_column")
     in_time_interval_column = kwargs.get("month_column")
@@ -495,12 +486,10 @@ def ff_bin_distribution_by_loc(in_dataframe, kwargs):
         dfsort["bin_loc"] = np.digitize(dfsort[value_column], dfsort_locbins)
         df_groupby_bin_loc = dfsort.groupby(in_key_column_name)["bin_loc"]
         agg_funcs = dict()
-        for i in range(1, dfsort_locbins.size):
-            agg_funcs[dfsort_locbins.values[i - 1]] = (
-                (value_column + "_ge_cnt_bin" + str(dfsort_locbins.values[i - 1]) + "_L" + str(in_N_month),
-                 lambda x, y=i: np.sum(x >= y) / np.size(x)))
-
         i_dict_key_id = in_dic_start_id
+        for i in range(1, dfsort_locbins.size):
+            agg_funcs[dfsort_locbins.values[i - 1]] = lambda x, y=i: np.sum(x >= y) / np.size(x)
+        agg_func_list = []
         for k in agg_funcs.keys():
             dict_result_dic[i_dict_key_id] = {
                 "module": "ff_bin_distribution_by_loc",
@@ -511,8 +500,9 @@ def ff_bin_distribution_by_loc(in_dataframe, kwargs):
                 "N_Months": str(in_N_month),
                 "number_of_bins": str(number_of_bins),
                 "bin_value": k}
+            agg_func_list += [("var_" + str(i_dict_key_id), agg_funcs[k])]
             i_dict_key_id += 1
-            df_result_bin_loc = df_groupby_bin_loc.agg([agg_funcs[k]])
+        df_result_bin_loc = df_groupby_bin_loc.agg(agg_func_list)
     else:
         df_groupby_bin_loc = dfsort.groupby(in_key_column_name)[value_column]
         df_result_bin_loc = df_groupby_bin_loc.agg([(var_name, lambda x: np.sum(x >= threshold_value) / np.size(x))])
@@ -522,7 +512,6 @@ def ff_bin_distribution_by_loc(in_dataframe, kwargs):
 
 # 按给定data frame，以max - min分段，统计各key在分段内的比例
 def ff_bin_distribution_by_val(in_dataframe, kwargs):
-
     # 取得入参
     in_key_column_name = kwargs.get("key_column")
     in_time_interval_column = kwargs.get("month_column")
@@ -547,16 +536,13 @@ def ff_bin_distribution_by_val(in_dataframe, kwargs):
         dfsort["bin_val"] = np.digitize(dfsort[value_column], dfsort_valbins)
         df_groupby_bin_val = dfsort.groupby(in_key_column_name)["bin_val"]
         agg_funcs = dict()
-        for i in range(1, dfsort_valbins.size):
-            agg_funcs[dfsort_valbins[i - 1]] = (
-                value_column + "_ge_val_bin" + str(dfsort_valbins[i - 1]) + "_L" + str(in_N_month),
-                lambda x, y=i: np.sum(x >= y) / np.size(x))
-
-        dict_result_dic = dict()
         i_dict_key_id = in_dic_start_id
+        for i in range(1, dfsort_valbins.size):
+            agg_funcs[dfsort_valbins[i - 1]] = lambda x, y=i: np.sum(x >= y) / np.size(x)
+        agg_func_list = []
         for k in agg_funcs.keys():
             dict_result_dic[i_dict_key_id] = {
-                "module": "ff_bin_distribution_by_val",
+                "module": "ff_bin_distribution_by_loc",
                 "key_column": in_key_column_name,
                 "month_column": in_time_interval_column,
                 "value_column": value_column,
@@ -564,8 +550,9 @@ def ff_bin_distribution_by_val(in_dataframe, kwargs):
                 "N_Months": str(in_N_month),
                 "number_of_bins": str(number_of_bins),
                 "bin_value": k}
+            agg_func_list += [("var_" + str(i_dict_key_id), agg_funcs[k])]
             i_dict_key_id += 1
-            df_result_bin_val = df_groupby_bin_val.agg([agg_funcs[k]])
+        df_result_bin_val = df_groupby_bin_val.agg(agg_func_list)
     else:
         df_groupby_bin_val = dfsort.groupby(in_key_column_name)[value_column]
         df_result_bin_val = df_groupby_bin_val.agg([(var_name, lambda x: np.sum(x >= threshold_value) / np.size(x))])
@@ -575,7 +562,6 @@ def ff_bin_distribution_by_val(in_dataframe, kwargs):
 
 # 对于字符型字段，统计各值出现的数量和比例
 def ff_category_cnt_pct(in_dataframe, kwargs):
-
     # 取得入参
     in_key_column_name = kwargs.get("key_column")
     in_time_interval_column = kwargs.get("month_column")
@@ -612,9 +598,9 @@ def ff_category_cnt_pct(in_dataframe, kwargs):
                 "func_name": "cnt",
                 "N_Months": str(in_N_month),
                 "category_value": col_name}
-            i_dict_key_id += 1
             df_dummy_cnt_result = pd_dummy_groupby[col_name].sum()
-            pd_dummy_result[value_column + "_" + col_name + "_cnt_L" + str(in_N_month)] = df_dummy_cnt_result
+            pd_dummy_result["var_" + str(i_dict_key_id)] = df_dummy_cnt_result
+            i_dict_key_id += 1
 
             dict_result_dic[i_dict_key_id] = {
                 "module": "ff_category_cnt_pct",
@@ -625,11 +611,13 @@ def ff_category_cnt_pct(in_dataframe, kwargs):
                 "func_name": "pct",
                 "N_Months": str(in_N_month),
                 "category_value": col_name}
-            i_dict_key_id += 1
             df_dummy_pct_result = pd_dummy_groupby[col_name].mean()
-            pd_dummy_result[value_column + "_" + col_name + "_pct_L" + str(in_N_month)] = df_dummy_pct_result
+            pd_dummy_result["var_" + str(i_dict_key_id)] = df_dummy_pct_result
+            i_dict_key_id += 1
     else:
-        pd_dummy_result[var_name] = df_last_N_months.groupby(in_key_column_name)[value_column].agg(lambda x: x[x==category_value].size)
-    pd_dummy_result = pd_dummy_result.reindex(columns=list(set(pd_dummy_result.columns.values) - set([in_key_column_name])))
+        pd_dummy_result[var_name] = df_last_N_months.groupby(in_key_column_name)[value_column].agg(
+            lambda x: x[x == category_value].size)
+    pd_dummy_result = pd_dummy_result.reindex(
+        columns=list(set(pd_dummy_result.columns.values) - set([in_key_column_name])))
 
     return (dict_result_dic, pd_dummy_result)

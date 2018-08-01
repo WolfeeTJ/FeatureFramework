@@ -27,7 +27,7 @@ def ff_offline_production(in_datasource_name, in_data_dic_name, in_key_column_na
     df_result.index = df_result[in_key_column_name]
 
     for i in range(1, len(configfile)):
-        print("processing " + str(configfile.iloc[i]))
+        # print("processing " + str(configfile.iloc[i]))
         func_to_call = eval(configfile.iloc[i]["module"])
         if configfile.iloc[i]["module"] == "ff_combination_pct":
             dic_dummy, df_filter[configfile.iloc[i]["var_name"]] = func_to_call(df_filter, configfile.iloc[i])

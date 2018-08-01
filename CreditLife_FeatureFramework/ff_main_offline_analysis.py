@@ -136,8 +136,9 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
         dic_func_pars["value_column"] = var_name
         dic_func_pars["base_month"] = month_end
         for var_month in list_month_combinations:
-            dic_start_id = max(dic_result.keys()) + 1
             dic_func_pars["N_Months"] = var_month
+
+            dic_start_id = max(dic_result.keys()) + 1
             dic_func_pars["in_dic_start_id"] = dic_start_id
             dic_common_stat, df_common_stat = ff.ff_common_stat(df_filter, dic_func_pars)
             df_result = df_result.merge(df_common_stat, how="outer", on=[in_key_column],
@@ -145,6 +146,7 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
             dic_result.update(dic_common_stat)
 
             dic_start_id = max(dic_result.keys()) + 1
+            dic_func_pars["in_dic_start_id"] = dic_start_id
             dic_period_stat, df_period_stat = ff.ff_period_compare_stat(df_filter, dic_func_pars)
             df_result = df_result.merge(df_period_stat, how="outer", on=[in_key_column],
                                         validate="one_to_one")
@@ -178,10 +180,10 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
             dic_func_pars["in_dic_start_id"] = dic_start_id
             if (continue_show_or_inc == "show"):
                 d, s = ff.ff_continue_gt_N(df_result_var_pct, dic_func_pars)
-                df_result[var_name + "_continu_gt_show_" + str(var_month)] = s
+                df_result["var_" + str(dic_start_id)] = s
             elif (continue_show_or_inc == "inc"):
                 d, s = ff.ff_continue_inc_gt_N(df_result_var_pct, dic_func_pars)
-                df_result[var_name + "_continu_gt_inc_" + str(var_month)] = s
+                df_result["var_" + str(dic_start_id)] = s
             dic_result.update(d)
 
     log_cur_time("连续出现/连续增加 结果")
@@ -206,18 +208,21 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
         dic_func_pars["value_column"] = var_name
         dic_func_pars["base_month"] = month_end
         for var_month in list_month_combinations:
-            dic_start_id = max(dic_result.keys()) + 1
             dic_func_pars["N_Months"] = var_month
-            dic_func_pars["in_dic_start_id"] = dic_start_id
             if (~ np.isnan(bin_by_loc)):
+                dic_start_id = max(dic_result.keys()) + 1
+                dic_func_pars["in_dic_start_id"] = dic_start_id
                 dic_func_pars["number_of_bins"] = bin_by_loc
                 dic_result_bin, df_result_bin_loc = ff.ff_bin_distribution_by_loc(df_result_var_pct, dic_func_pars)
                 df_result = df_result.merge(df_result_bin_loc, left_index=True, right_index=True)
+                dic_result.update(dic_result_bin)
             if (~ np.isnan(bin_by_val)):
+                dic_start_id = max(dic_result.keys()) + 1
+                dic_func_pars["in_dic_start_id"] = dic_start_id
                 dic_func_pars["number_of_bins"] = bin_by_val
                 dic_result_bin, df_result_bin_val = ff.ff_bin_distribution_by_val(df_result_var_pct, dic_func_pars)
                 df_result = df_result.merge(df_result_bin_val, left_index=True, right_index=True)
-            dic_result.update(dic_result_bin)
+                dic_result.update(dic_result_bin)
     log_cur_time("分段分布 结果")
     print(dic_result)
     print(df_result)
