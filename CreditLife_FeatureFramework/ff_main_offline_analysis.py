@@ -8,6 +8,7 @@ import CreditLife_FeatureFramework.ff_funcs as ff
 import pandas as pd
 import numpy as np
 import datetime
+import ast
 
 
 def ff_check_file(filebasename, customer_col, month_col, month_start, month_end, num_vars, char_vars):
@@ -108,7 +109,7 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
             dic_func_pars["in_pct_column_lists"] = list_var_combination
             dic_func_pars["in_dic_start_id"] = dic_start_id
             dic_combination_dic, df_pct_var = ff.ff_combination_pct(df_filter, dic_func_pars)
-            df_result_var_pct = df_result_var_pct.merge(df_pct_var, how="left", on=[in_key_column, in_month_column],
+            df_result_var_pct = df_result_var_pct.merge(df_pct_var, how="left", left_index=True, right_index=True,
                                                         validate="one_to_one")
             dic_result.update(dic_combination_dic)
     df_result_var_pct = df_result_var_pct.query(
@@ -189,31 +190,32 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
 
     log_cur_time("分段分布")
     df_conf_var_gen_bin_stat = conf_var_gen_bin_stat.query("datasource == '" + in_datasource_name + "'")
-    for i_df_conf_var_gen_continue_stat in range(0, len(df_conf_var_gen_bin_stat)):
-        var_name = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["var_name"]
-        month_combinations = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["month_combinations"]
-        month_start = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["month_start"]
-        month_end = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["month_end"]
-        bin_by_loc = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["bin_by_loc"]
-        bin_by_val = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["bin_by_val"]
-        is_discrete = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_continue_stat]["is_discrete"]
+    for i_df_conf_var_gen_bin_stat in range(0, len(df_conf_var_gen_bin_stat)):
+        var_name = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_bin_stat]["var_name"]
+        month_combinations = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_bin_stat]["month_combinations"]
+        month_start = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_bin_stat]["month_start"]
+        month_end = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_bin_stat]["month_end"]
+        bin_by_loc = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_bin_stat]["bin_by_loc"]
+        bin_by_val = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_bin_stat]["bin_by_val"]
+        is_discrete = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_bin_stat]["is_discrete"]
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        dic_func_pars = df_conf_var_gen_bin_stat.iloc[i_df_conf_var_gen_bin_stat].to_dict()
+        dic_func_pars["key_column"] = in_key_column
+        dic_func_pars["month_column"] = in_month_column
+        dic_func_pars["value_column"] = var_name
+        dic_func_pars["base_month"] = month_end
         for var_month in list_month_combinations:
             dic_start_id = max(dic_result.keys()) + 1
+            dic_func_pars["N_Months"] = var_month
+            dic_func_pars["in_dic_start_id"] = dic_start_id
             if (~ np.isnan(bin_by_loc)):
-                dic_result_bin, df_result_bin_loc = ff.ff_bin_distribution_by_loc(df_result_var_pct, in_key_column,
-                                                                                  var_name,
-                                                                                  bin_by_loc,
-                                                                                  in_month_column, month_end, var_month,
-                                                                                  in_dic_start_id=dic_start_id)
+                dic_func_pars["number_of_bins"] = bin_by_loc
+                dic_result_bin, df_result_bin_loc = ff.ff_bin_distribution_by_loc(df_result_var_pct, dic_func_pars)
                 df_result = df_result.merge(df_result_bin_loc, left_index=True, right_index=True)
             if (~ np.isnan(bin_by_val)):
-                dic_result_bin, df_result_bin_val = ff.ff_bin_distribution_by_val(df_result_var_pct, in_key_column,
-                                                                                  var_name,
-                                                                                  bin_by_val,
-                                                                                  in_month_column, month_end, var_month,
-                                                                                  in_dic_start_id=dic_start_id)
+                dic_func_pars["number_of_bins"] = bin_by_val
+                dic_result_bin, df_result_bin_val = ff.ff_bin_distribution_by_val(df_result_var_pct, dic_func_pars)
                 df_result = df_result.merge(df_result_bin_val, left_index=True, right_index=True)
             dic_result.update(dic_result_bin)
     log_cur_time("分段分布 结果")
@@ -229,11 +231,16 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
         month_end = df_conf_var_gen_char_stat.iloc[i_df_conf_var_gen_continue_stat]["month_end"]
         s_month_combinations = pd.Series(month_combinations.split(","))
         list_month_combinations = s_month_combinations.apply(lambda x: x.strip()).astype(int).tolist()
+        dic_func_pars = df_conf_var_gen_char_stat.iloc[i_df_conf_var_gen_continue_stat].to_dict()
+        dic_func_pars["key_column"] = in_key_column
+        dic_func_pars["month_column"] = in_month_column
+        dic_func_pars["value_column"] = var_name
+        dic_func_pars["base_month"] = month_end
         for var_month in list_month_combinations:
             dic_start_id = max(dic_result.keys()) + 1
-            dic_result_dummy, df_result_dummy = ff.ff_category_cnt_pct(df_result_var_pct, in_key_column, var_name,
-                                                                       in_month_column, month_end, var_month,
-                                                                       in_dic_start_id=dic_start_id)
+            dic_func_pars["N_Months"] = var_month
+            dic_func_pars["in_dic_start_id"] = dic_start_id
+            dic_result_dummy, df_result_dummy = ff.ff_category_cnt_pct(df_result_var_pct, dic_func_pars)
             df_result = df_result.merge(df_result_dummy, how="left", left_index=True, right_index=True)
             dic_result.update(dic_result_dummy)
     log_cur_time("字符分布 结果")
@@ -247,7 +254,27 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
     return (dic_result, df_result)
 
 
-def ff_offline_production(in_datasource_name, in_data_dic_name):
-    dic_input = pd.read_table("conf/offline-production-input-data-dic.txt")
+def ff_offline_production(in_datasource_name, in_data_dic_name, in_key_column_name):
+    # 读取配置信息和元数据、数据文件
+    def conv_func(x):
+        if x is None or x == "":
+            return np.nan
+        else:
+            return ast.literal_eval(x)
 
-    print()
+    configfile = pd.read_csv("data/" + in_data_dic_name, converters={"denominator": conv_func, "numerator": conv_func})
+
+    df_filter = pd.read_table("data/" + in_datasource_name + ".txt")
+
+    df_result = df_filter[in_key_column_name].drop_duplicates().to_frame()
+    df_result.index = df_result[in_key_column_name]
+
+    for i in range(1, len(configfile)):
+        print("processing " + str(configfile.iloc[i]))
+        func_to_call = eval(configfile.iloc[i]["module"])
+        if configfile.iloc[i]["module"] == "ff_combination_pct":
+            dic_dummy, df_filter[configfile.iloc[i]["var_name"]] = func_to_call(df_filter, configfile.iloc[i])
+        else:
+            dic_dummy, df_result[configfile.iloc[i]["var_name"]] = func_to_call(df_filter, configfile.iloc[i])
+
+    return df_result

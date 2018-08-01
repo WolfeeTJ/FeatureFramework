@@ -5,46 +5,25 @@ Created on Fri Jul 13 15:17:54 2018
 @author: Guang Du
 """
 
-#import CreditLife_FeatureFramework.ff_main as ff
-from CreditLife_FeatureFramework.ff_funcs import *
+import CreditLife_FeatureFramework.ff_main_offline_production as ff
 import pandas as pd
-import numpy as np
-import json
-import ast
+
 
 # 读取配置信息和元数据、数据文件
-def conv_func(x):
-    if x is None or x == "":
-        return np.nan
-    else:
-        return ast.literal_eval(x)
+configfile = pd.read_table("conf/config-filter-data.txt")
+df_result = pd.DataFrame([])
+for i in range(0, len(configfile)):
+    datasource = configfile.iloc[i]["datasource"]
+    key_col = configfile.iloc[i]["key_col"]
+    month_col = configfile.iloc[i]["month_col"]
+    month_start = configfile.iloc[i]["month_start"]
+    month_end = configfile.iloc[i]["month_end"]
+    in_where = configfile.iloc[i]["where"]
+    df_result_tmp = ff.ff_offline_production(datasource, datasource+".dic", key_col)
+    print("文件： " + datasource)
+    print(df_result_tmp)
 
-configfile = pd.read_csv("data/MD_MTH_DATA.dic", converters={"denominator": conv_func, "numerator": conv_func})
+    df_result_tmp.to_csv("data/" + datasource + "_offline_production.out")
 
-configfile
-
-configfile.iloc[1].to_dict()
-
-configfile.iloc[1].dtypes
-configfile.dtypes
-
-type(configfile.iloc[1].to_dict()["denominator"])
-
-
-func_to_call = eval(configfile.iloc[1]["module"])
-# func_to_call(configfile.iloc[1])
-df_filter = pd.read_table("data/MD_MTH_DATA.txt")
-
-configfile.iloc[1]
-dic_combination_dic, df_pct_var = ff_combination_pct(df_filter, configfile.iloc[4])
-dic_combination_dic, df_common_stat = ff_common_stat(df_filter, configfile.iloc[24])
-dic_combination_dic, df_period_compare_stat = ff_period_compare_stat(df_filter, configfile.iloc[20])
-
-for i in range(0,len(configfile)):
-   print(configfile.iloc[i]["module"])
-   func_to_call = eval(configfile.iloc[i]["module"])
-   func_to_call(configfile.iloc[i])
-
-
-
-type(ast.literal_eval("['a']"))
+# df_result
+df_result_t = df_result_tmp.T

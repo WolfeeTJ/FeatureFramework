@@ -5,9 +5,8 @@ Created on Fri Jul 13 15:17:54 2018
 @author: Guang Du
 """
 
-import CreditLife_FeatureFramework.ff_main as ff
+import CreditLife_FeatureFramework.ff_main_offline_analysis as ff
 import pandas as pd
-import numpy as np
 import json
 
 # 读取配置信息和元数据、数据文件
@@ -33,7 +32,7 @@ for i in range(0, len(configfile)):
     df_dic.index.name = "var_name"
     df_dic.to_csv("data/" + datasource + ".dic")
 
-    df_result_tmp.to_csv("data/" + datasource + ".out")
+    df_result_tmp.to_csv("data/" + datasource + "_offline_analysis.out")
 
 # df_result
 df_result_t = df_result_tmp.T
