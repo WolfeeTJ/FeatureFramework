@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import compileall
 
 additional_scripts=[
-    '1_ff_data_check.py',
+    'ff_data_check.py',
     '2_ff_var_generate.py',
 ]
 

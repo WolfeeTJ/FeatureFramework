@@ -1,0 +1,4 @@
+﻿var_name,N_Months,base_month,bin_value,category_value,dataset,denominator,denominator_months,func_name,key_column,module,expression,month_column,number_of_bins,numerator,numerator_months,threshold_value,value_column
+var_22,,,,,,,,np.sum,seqNo,ff_common_stat,,,,,,,case_id
+var_25,,,,,,,,np.size,seqNo,ff_common_stat,,,,,,,some_number
+var_31,,,,,,,,,,ff_customized_var,"df[""var_22""]+df[""var_25""]",,,,,,

@@ -1,0 +1,214 @@
+	module	key_column	month_column	base_month	N_Months	value_column	func_name	number_of_bins	bin_value	category_value	numerator_months	denomerator_months	numerator	denominator
+var_1	ff_combination_pct	c1	m1		1								['a2']	['a2', 'a4']
+var_2	ff_combination_pct	c1	m1		1								['a2']	['a2', 'a3']
+var_3	ff_combination_pct	c1	m1		1								['a3']	['a3', 'a2']
+var_4	ff_combination_pct	c1	m1		1								['a3']	['a3', 'a4']
+var_5	ff_combination_pct	c1	m1		1								['a4']	['a4', 'a2']
+var_6	ff_combination_pct	c1	m1		1								['a4']	['a4', 'a3']
+var_7	ff_combination_pct	c1	m1		3								['a2']	['a2', 'a4']
+var_8	ff_combination_pct	c1	m1		3								['a2']	['a2', 'a3']
+var_9	ff_combination_pct	c1	m1		3								['a3']	['a3', 'a2']
+var_10	ff_combination_pct	c1	m1		3								['a3']	['a3', 'a4']
+var_11	ff_combination_pct	c1	m1		3								['a4']	['a4', 'a2']
+var_12	ff_combination_pct	c1	m1		3								['a4']	['a4', 'a3']
+var_13	ff_common_stat	c1	m1	12	1	a2	np.size							
+var_14	ff_common_stat	c1	m1	12	1	a2	cnt_gt_0							
+var_15	ff_common_stat	c1	m1	12	1	a2	pct_gt_0							
+var_16	ff_common_stat	c1	m1	12	1	a2	np.sum							
+var_17	ff_common_stat	c1	m1	12	1	a2	np.min							
+var_18	ff_common_stat	c1	m1	12	1	a2	np.max							
+var_19	ff_common_stat	c1	m1	12	1	a2	np.average							
+var_20	ff_common_stat	c1	m1	12	1	a2	np.median							
+var_21	ff_common_stat	c1	m1	12	1	a2	cnt_isna							
+var_22	ff_common_stat	c1	m1	12	1	a2	pct_isna							
+var_23	ff_period_compare_stat	c1	m1	12	1	a2	np.sum				1	1		
+var_24	ff_period_compare_stat	c1	m1	12	1	a2	np.max				1	1		
+var_25	ff_period_compare_stat	c1	m1	12	1	a2	np.mean				1	1		
+var_26	ff_common_stat	c1	m1	12	3	a2	np.size							
+var_27	ff_common_stat	c1	m1	12	3	a2	cnt_gt_0							
+var_28	ff_common_stat	c1	m1	12	3	a2	pct_gt_0							
+var_29	ff_common_stat	c1	m1	12	3	a2	np.sum							
+var_30	ff_common_stat	c1	m1	12	3	a2	np.min							
+var_31	ff_common_stat	c1	m1	12	3	a2	np.max							
+var_32	ff_common_stat	c1	m1	12	3	a2	np.average							
+var_33	ff_common_stat	c1	m1	12	3	a2	np.median							
+var_34	ff_common_stat	c1	m1	12	3	a2	cnt_isna							
+var_35	ff_common_stat	c1	m1	12	3	a2	pct_isna							
+var_36	ff_period_compare_stat	c1	m1	12	3	a2	np.sum				1	3		
+var_37	ff_period_compare_stat	c1	m1	12	3	a2	np.sum				1	2		
+var_38	ff_period_compare_stat	c1	m1	12	3	a2	np.max				1	3		
+var_39	ff_period_compare_stat	c1	m1	12	3	a2	np.max				1	2		
+var_40	ff_period_compare_stat	c1	m1	12	3	a2	np.mean				1	3		
+var_41	ff_period_compare_stat	c1	m1	12	3	a2	np.mean				1	2		
+var_42	ff_period_compare_stat	c1	m1	12	3	a2	np.sum				2	3		
+var_43	ff_period_compare_stat	c1	m1	12	3	a2	np.sum				1	2		
+var_44	ff_period_compare_stat	c1	m1	12	3	a2	np.max				2	3		
+var_45	ff_period_compare_stat	c1	m1	12	3	a2	np.max				1	2		
+var_46	ff_period_compare_stat	c1	m1	12	3	a2	np.mean				2	3		
+var_47	ff_period_compare_stat	c1	m1	12	3	a2	np.mean				1	2		
+var_48	ff_period_compare_stat	c1	m1	12	3	a2	np.sum				2	2		
+var_49	ff_period_compare_stat	c1	m1	12	3	a2	np.sum				1	2		
+var_50	ff_period_compare_stat	c1	m1	12	3	a2	np.max				2	2		
+var_51	ff_period_compare_stat	c1	m1	12	3	a2	np.max				1	2		
+var_52	ff_period_compare_stat	c1	m1	12	3	a2	np.mean				2	2		
+var_53	ff_period_compare_stat	c1	m1	12	3	a2	np.mean				1	2		
+var_54	ff_common_stat	c1	m1	12	1	a3	np.size							
+var_55	ff_common_stat	c1	m1	12	1	a3	cnt_gt_0							
+var_56	ff_common_stat	c1	m1	12	1	a3	pct_gt_0							
+var_57	ff_common_stat	c1	m1	12	1	a3	np.sum							
+var_58	ff_common_stat	c1	m1	12	1	a3	np.min							
+var_59	ff_common_stat	c1	m1	12	1	a3	np.max							
+var_60	ff_common_stat	c1	m1	12	1	a3	np.average							
+var_61	ff_common_stat	c1	m1	12	1	a3	np.median							
+var_62	ff_common_stat	c1	m1	12	1	a3	cnt_isna							
+var_63	ff_common_stat	c1	m1	12	1	a3	pct_isna							
+var_64	ff_period_compare_stat	c1	m1	12	1	a3	np.sum				1	1		
+var_65	ff_period_compare_stat	c1	m1	12	1	a3	np.max				1	1		
+var_66	ff_period_compare_stat	c1	m1	12	1	a3	np.mean				1	1		
+var_67	ff_common_stat	c1	m1	12	3	a3	np.size							
+var_68	ff_common_stat	c1	m1	12	3	a3	cnt_gt_0							
+var_69	ff_common_stat	c1	m1	12	3	a3	pct_gt_0							
+var_70	ff_common_stat	c1	m1	12	3	a3	np.sum							
+var_71	ff_common_stat	c1	m1	12	3	a3	np.min							
+var_72	ff_common_stat	c1	m1	12	3	a3	np.max							
+var_73	ff_common_stat	c1	m1	12	3	a3	np.average							
+var_74	ff_common_stat	c1	m1	12	3	a3	np.median							
+var_75	ff_common_stat	c1	m1	12	3	a3	cnt_isna							
+var_76	ff_common_stat	c1	m1	12	3	a3	pct_isna							
+var_77	ff_period_compare_stat	c1	m1	12	3	a3	np.sum				1	3		
+var_78	ff_period_compare_stat	c1	m1	12	3	a3	np.sum				1	2		
+var_79	ff_period_compare_stat	c1	m1	12	3	a3	np.max				1	3		
+var_80	ff_period_compare_stat	c1	m1	12	3	a3	np.max				1	2		
+var_81	ff_period_compare_stat	c1	m1	12	3	a3	np.mean				1	3		
+var_82	ff_period_compare_stat	c1	m1	12	3	a3	np.mean				1	2		
+var_83	ff_period_compare_stat	c1	m1	12	3	a3	np.sum				2	3		
+var_84	ff_period_compare_stat	c1	m1	12	3	a3	np.sum				1	2		
+var_85	ff_period_compare_stat	c1	m1	12	3	a3	np.max				2	3		
+var_86	ff_period_compare_stat	c1	m1	12	3	a3	np.max				1	2		
+var_87	ff_period_compare_stat	c1	m1	12	3	a3	np.mean				2	3		
+var_88	ff_period_compare_stat	c1	m1	12	3	a3	np.mean				1	2		
+var_89	ff_period_compare_stat	c1	m1	12	3	a3	np.sum				2	2		
+var_90	ff_period_compare_stat	c1	m1	12	3	a3	np.sum				1	2		
+var_91	ff_period_compare_stat	c1	m1	12	3	a3	np.max				2	2		
+var_92	ff_period_compare_stat	c1	m1	12	3	a3	np.max				1	2		
+var_93	ff_period_compare_stat	c1	m1	12	3	a3	np.mean				2	2		
+var_94	ff_period_compare_stat	c1	m1	12	3	a3	np.mean				1	2		
+var_95	ff_common_stat	c1	m1	12	1	a4	np.size							
+var_96	ff_common_stat	c1	m1	12	1	a4	cnt_gt_0							
+var_97	ff_common_stat	c1	m1	12	1	a4	pct_gt_0							
+var_98	ff_common_stat	c1	m1	12	1	a4	np.sum							
+var_99	ff_common_stat	c1	m1	12	1	a4	np.min							
+var_100	ff_common_stat	c1	m1	12	1	a4	np.max							
+var_101	ff_common_stat	c1	m1	12	1	a4	np.average							
+var_102	ff_common_stat	c1	m1	12	1	a4	np.median							
+var_103	ff_common_stat	c1	m1	12	1	a4	cnt_isna							
+var_104	ff_common_stat	c1	m1	12	1	a4	pct_isna							
+var_105	ff_period_compare_stat	c1	m1	12	1	a4	np.sum				1	1		
+var_106	ff_period_compare_stat	c1	m1	12	1	a4	np.max				1	1		
+var_107	ff_period_compare_stat	c1	m1	12	1	a4	np.mean				1	1		
+var_108	ff_common_stat	c1	m1	12	3	a4	np.size							
+var_109	ff_common_stat	c1	m1	12	3	a4	cnt_gt_0							
+var_110	ff_common_stat	c1	m1	12	3	a4	pct_gt_0							
+var_111	ff_common_stat	c1	m1	12	3	a4	np.sum							
+var_112	ff_common_stat	c1	m1	12	3	a4	np.min							
+var_113	ff_common_stat	c1	m1	12	3	a4	np.max							
+var_114	ff_common_stat	c1	m1	12	3	a4	np.average							
+var_115	ff_common_stat	c1	m1	12	3	a4	np.median							
+var_116	ff_common_stat	c1	m1	12	3	a4	cnt_isna							
+var_117	ff_common_stat	c1	m1	12	3	a4	pct_isna							
+var_118	ff_period_compare_stat	c1	m1	12	3	a4	np.sum				1	3		
+var_119	ff_period_compare_stat	c1	m1	12	3	a4	np.sum				1	2		
+var_120	ff_period_compare_stat	c1	m1	12	3	a4	np.max				1	3		
+var_121	ff_period_compare_stat	c1	m1	12	3	a4	np.max				1	2		
+var_122	ff_period_compare_stat	c1	m1	12	3	a4	np.mean				1	3		
+var_123	ff_period_compare_stat	c1	m1	12	3	a4	np.mean				1	2		
+var_124	ff_period_compare_stat	c1	m1	12	3	a4	np.sum				2	3		
+var_125	ff_period_compare_stat	c1	m1	12	3	a4	np.sum				1	2		
+var_126	ff_period_compare_stat	c1	m1	12	3	a4	np.max				2	3		
+var_127	ff_period_compare_stat	c1	m1	12	3	a4	np.max				1	2		
+var_128	ff_period_compare_stat	c1	m1	12	3	a4	np.mean				2	3		
+var_129	ff_period_compare_stat	c1	m1	12	3	a4	np.mean				1	2		
+var_130	ff_period_compare_stat	c1	m1	12	3	a4	np.sum				2	2		
+var_131	ff_period_compare_stat	c1	m1	12	3	a4	np.sum				1	2		
+var_132	ff_period_compare_stat	c1	m1	12	3	a4	np.max				2	2		
+var_133	ff_period_compare_stat	c1	m1	12	3	a4	np.max				1	2		
+var_134	ff_period_compare_stat	c1	m1	12	3	a4	np.mean				2	2		
+var_135	ff_period_compare_stat	c1	m1	12	3	a4	np.mean				1	2		
+var_136	ff_bin_distribution_by_val	c1	m1	12	1	a1		4	0					
+var_137	ff_bin_distribution_by_val	c1	m1	12	1	a1		4	2.25					
+var_138	ff_bin_distribution_by_val	c1	m1	12	1	a1		4	4.5					
+var_139	ff_bin_distribution_by_val	c1	m1	12	1	a1		4	6.75					
+var_140	ff_bin_distribution_by_val	c1	m1	12	3	a1		4	0					
+var_141	ff_bin_distribution_by_val	c1	m1	12	3	a1		4	2.25					
+var_142	ff_bin_distribution_by_val	c1	m1	12	3	a1		4	4.5					
+var_143	ff_bin_distribution_by_val	c1	m1	12	3	a1		4	6.75					
+var_144	ff_bin_distribution_by_loc	c1	m1	12	1	a2		8	98					
+var_145	ff_bin_distribution_by_loc	c1	m1	12	1	a2		8	129					
+var_146	ff_bin_distribution_by_loc	c1	m1	12	1	a2		8	143					
+var_147	ff_bin_distribution_by_loc	c1	m1	12	1	a2		8	262					
+var_148	ff_bin_distribution_by_loc	c1	m1	12	1	a2		8	370					
+var_149	ff_bin_distribution_by_loc	c1	m1	12	1	a2		8	554					
+var_150	ff_bin_distribution_by_loc	c1	m1	12	1	a2		8	727					
+var_151	ff_bin_distribution_by_loc	c1	m1	12	1	a2		8	943					
+var_152	ff_bin_distribution_by_loc	c1	m1	12	3	a2		8	9					
+var_153	ff_bin_distribution_by_loc	c1	m1	12	3	a2		8	108					
+var_154	ff_bin_distribution_by_loc	c1	m1	12	3	a2		8	167					
+var_155	ff_bin_distribution_by_loc	c1	m1	12	3	a2		8	291					
+var_156	ff_bin_distribution_by_loc	c1	m1	12	3	a2		8	479					
+var_157	ff_bin_distribution_by_loc	c1	m1	12	3	a2		8	554					
+var_158	ff_bin_distribution_by_loc	c1	m1	12	3	a2		8	586					
+var_159	ff_bin_distribution_by_loc	c1	m1	12	3	a2		8	727					
+var_160	ff_bin_distribution_by_val	c1	m1	12	1	a3		6	27					
+var_161	ff_bin_distribution_by_val	c1	m1	12	1	a3		6	165.1666667					
+var_162	ff_bin_distribution_by_val	c1	m1	12	1	a3		6	303.3333333					
+var_163	ff_bin_distribution_by_val	c1	m1	12	1	a3		6	441.5					
+var_164	ff_bin_distribution_by_val	c1	m1	12	1	a3		6	579.6666667					
+var_165	ff_bin_distribution_by_val	c1	m1	12	1	a3		6	717.8333333					
+var_166	ff_bin_distribution_by_val	c1	m1	12	3	a3		6	18					
+var_167	ff_bin_distribution_by_val	c1	m1	12	3	a3		6	176.8333333					
+var_168	ff_bin_distribution_by_val	c1	m1	12	3	a3		6	335.6666667					
+var_169	ff_bin_distribution_by_val	c1	m1	12	3	a3		6	494.5					
+var_170	ff_bin_distribution_by_val	c1	m1	12	3	a3		6	653.3333333					
+var_171	ff_bin_distribution_by_val	c1	m1	12	3	a3		6	812.1666667					
+var_172	ff_bin_distribution_by_val	c1	m1	12	1	a4		7	124					
+var_173	ff_bin_distribution_by_val	c1	m1	12	1	a4		7	231.8571429					
+var_174	ff_bin_distribution_by_val	c1	m1	12	1	a4		7	339.7142857					
+var_175	ff_bin_distribution_by_val	c1	m1	12	1	a4		7	447.5714286					
+var_176	ff_bin_distribution_by_val	c1	m1	12	1	a4		7	555.4285714					
+var_177	ff_bin_distribution_by_val	c1	m1	12	1	a4		7	663.2857143					
+var_178	ff_bin_distribution_by_val	c1	m1	12	1	a4		7	771.1428571					
+var_179	ff_bin_distribution_by_val	c1	m1	12	3	a4		7	34					
+var_180	ff_bin_distribution_by_val	c1	m1	12	3	a4		7	165					
+var_181	ff_bin_distribution_by_val	c1	m1	12	3	a4		7	296					
+var_182	ff_bin_distribution_by_val	c1	m1	12	3	a4		7	427					
+var_183	ff_bin_distribution_by_val	c1	m1	12	3	a4		7	558					
+var_184	ff_bin_distribution_by_val	c1	m1	12	3	a4		7	689					
+var_185	ff_bin_distribution_by_val	c1	m1	12	3	a4		7	820					
+var_186	ff_category_cnt_pct	c1	m1	12	1	t_type	cnt			B				
+var_187	ff_category_cnt_pct	c1	m1	12	1	t_type	pct			B				
+var_188	ff_category_cnt_pct	c1	m1	12	1	t_type	cnt			C				
+var_189	ff_category_cnt_pct	c1	m1	12	1	t_type	pct			C				
+var_190	ff_category_cnt_pct	c1	m1	12	3	t_type	cnt			A				
+var_191	ff_category_cnt_pct	c1	m1	12	3	t_type	pct			A				
+var_192	ff_category_cnt_pct	c1	m1	12	3	t_type	cnt			B				
+var_193	ff_category_cnt_pct	c1	m1	12	3	t_type	pct			B				
+var_194	ff_category_cnt_pct	c1	m1	12	3	t_type	cnt			C				
+var_195	ff_category_cnt_pct	c1	m1	12	3	t_type	pct			C				
+var_196	ff_category_cnt_pct	c1	m1	12	6	t_type	cnt			A				
+var_197	ff_category_cnt_pct	c1	m1	12	6	t_type	pct			A				
+var_198	ff_category_cnt_pct	c1	m1	12	6	t_type	cnt			B				
+var_199	ff_category_cnt_pct	c1	m1	12	6	t_type	pct			B				
+var_200	ff_category_cnt_pct	c1	m1	12	6	t_type	cnt			C				
+var_201	ff_category_cnt_pct	c1	m1	12	6	t_type	pct			C				
+var_202	ff_category_cnt_pct	c1	m1	12	9	t_type	cnt			A				
+var_203	ff_category_cnt_pct	c1	m1	12	9	t_type	pct			A				
+var_204	ff_category_cnt_pct	c1	m1	12	9	t_type	cnt			B				
+var_205	ff_category_cnt_pct	c1	m1	12	9	t_type	pct			B				
+var_206	ff_category_cnt_pct	c1	m1	12	9	t_type	cnt			C				
+var_207	ff_category_cnt_pct	c1	m1	12	9	t_type	pct			C				
+var_208	ff_category_cnt_pct	c1	m1	12	12	t_type	cnt			A				
+var_209	ff_category_cnt_pct	c1	m1	12	12	t_type	pct			A				
+var_210	ff_category_cnt_pct	c1	m1	12	12	t_type	cnt			B				
+var_211	ff_category_cnt_pct	c1	m1	12	12	t_type	pct			B				
+var_212	ff_category_cnt_pct	c1	m1	12	12	t_type	cnt			C				
+var_213	ff_category_cnt_pct	c1	m1	12	12	t_type	pct			C				

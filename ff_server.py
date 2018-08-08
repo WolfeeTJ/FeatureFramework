@@ -5,7 +5,8 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from flask import Flask
 from flask import request
-import main.ff_online_production_var_generate as ff
+import CreditLife_FeatureFramework.ff_main_online_production as ff
+import CreditLife_Process.ff_online_production_var_generate as ff_process
 
 executor = ThreadPoolExecutor(10)
 
@@ -17,7 +18,7 @@ def log_cur_time(in_str=None):
 
 def process_request_and_callback(in_body_json, in_callback_url):
     # feature framework processing here
-    dic_result = ff.process_online_vars(in_body_json)
+    dic_result = ff.ff_online_process(in_body_json)
     # call back Credit System Var to send Generation results
     response = requests.get(in_callback_url, data=dic_result)
     # print(response.content.decode())

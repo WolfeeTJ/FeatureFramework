@@ -1,58 +1,37 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Fri Jul 13 15:17:54 2018
+
+@author: Guang Du
+"""
+
+import CreditLife_FeatureFramework.ff_main_online_production as ff
+import pandas as pd
+import jsonpath
+import json
 
 json_file=""
-with open("data/法院黑名单.json", "r", encoding="utf8") as f:
+with open("data/test.json", "r", encoding="utf8") as f:
     json_file=f.read()
 
-json_file
-import json
-import jsonpath
-import conf.online_config as cf
-import pandas as pd
-jobj=json.loads(json_file)
-jobj
-len(jsonpath.jsonpath(jobj, '$.data[*].case_no'))
-j1=jsonpath.jsonpath(jobj, '$.data[*]')
-j1
-d1=pd.read_json(json.dumps(j1))
-d2=pd.io.json.json_normalize(j1)
-dic_result={}
-pd.read
+jobj = json.loads(json_file)
+configfile = pd.read_csv("conf/config-online-json-parser.csv")
 
-for k in cf.court_blacklist_conf.keys():
-    print(k)
-    dic_result[k]=jsonpath.jsonpath(jobj, cf.court_blacklist_conf[k])
+list_workflow_step = jsonpath.jsonpath(jobj, '$.workflow_step')
+if False == list_workflow_step:
+    raise Exception("Error parsing workflow step")
+workflow_step = list_workflow_step[0]
 
-print(dic_result)
+configfile_filtered=configfile.query("workflow_step == " + workflow_step)
 
+key_str = jsonpath.jsonpath(jobj, configfile_filtered.iloc[0]["key_json_path"])[0]
+key_column_name = configfile_filtered.iloc[0]["key_column_name"]
+df_result = pd.DataFrame({key_column_name: [key_str]})
+df_result.index = df_result[key_column_name]
 
-print("process_online_vars")
-json_datanode = jsonpath.jsonpath(jobj, '$.data[*]')
-json_datanode
-print("var_a: " +str(type(json_datanode)) + str(json_datanode))
-print("var_a[0]: " +str(type(json_datanode[0])) + str(json_datanode[0]))
-configfile = pd.read_csv("conf/config-online-prd.csv")
-print("config is:")
-print(configfile)
-df_filter=pd.io.json.json_normalize(json_datanode)
-jsonpath.jsonpath(jobj, '$.seqNo')
-json_seqNo = jsonpath.jsonpath(jobj, '$.seqNo')
-json_seqNo
-df_filter["seqNo"] = json_seqNo
-df_filter
-df_result = df_filter["seqNo"].drop_duplicates().to_frame()
-df_result.index = df_result["seqNo"]
-print("initial result is: " + str(df_result))
+for i in range(0, len(configfile_filtered)):
+    dic_config = configfile_filtered.iloc[i].to_dict()
+    df_result_tmp = ff.process_online_vars(jobj, dic_config)
+    df_result = df_result.merge(df_result_tmp, left_on=key_column_name, right_on=dic_config["key_column_name"])
 
-for i in range(1, len(configfile)):
-    # print("processing " + str(configfile.iloc[i]))
-    func_to_call = eval(configfile.iloc[i]["module"])
-    if configfile.iloc[i]["module"] == "ff_combination_pct":
-        dic_dummy, df_filter[configfile.iloc[i]["var_name"]] = func_to_call(df_filter, configfile.iloc[i])
-    elif configfile.iloc[i]["module"] == "ff_customized_var":
-        dic_dummy, df_result[configfile.iloc[i]["var_name"]] = func_to_call(df_result, configfile.iloc[i])
-    else:
-        dic_dummy, df_result[configfile.iloc[i]["var_name"]] = func_to_call(df_filter, configfile.iloc[i])
-
-print(str(df_result))
-
+print(df_result)
