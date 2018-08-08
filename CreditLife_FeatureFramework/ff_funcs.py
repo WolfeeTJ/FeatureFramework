@@ -145,7 +145,9 @@ def ff_common_stat(in_dataframe, kwargs):
     in_key_column_name = kwargs.get("key_column")
     in_time_interval_column = kwargs.get("month_column")
     base_month = kwargs.get("base_month")
-    in_N_month = int(kwargs.get("N_Months"))
+    in_N_month = kwargs.get("N_Months")
+    if not np.isnan(in_N_month):
+        in_N_month = int(in_N_month)
     value_column = kwargs.get("value_column")
     func_name = kwargs.get("func_name")
     in_dic_start_id = kwargs.get("in_dic_start_id")
@@ -173,10 +175,13 @@ def ff_common_stat(in_dataframe, kwargs):
             return x[x.isna()].size / x.size
 
     dict_result_dic = dict()
-    cond_filter_months = in_time_interval_column + " <= " + str(
-        base_month) + " and " + in_time_interval_column + " >= " + str(
-        base_month - in_N_month + 1)
-    in_df_N_months = in_dataframe.copy().query(cond_filter_months)
+    if not np.isnan(in_time_interval_column) and not np.isnan(base_month) and not np.isnan(in_N_month):
+        cond_filter_months = in_time_interval_column + " <= " + str(
+            base_month) + " and " + in_time_interval_column + " >= " + str(
+            base_month - in_N_month + 1)
+        in_df_N_months = in_dataframe.query(cond_filter_months)
+    else:
+        in_df_N_months = in_dataframe
     # df_result = in_df_N_months.groupby(in_key_column_name)[value_column].agg(agg_funcs)
 
     agg_funcs = []
@@ -621,3 +626,14 @@ def ff_category_cnt_pct(in_dataframe, kwargs):
         columns=list(set(pd_dummy_result.columns.values) - set([in_key_column_name])))
 
     return (dict_result_dic, pd_dummy_result)
+
+
+# 给定聚合后的data frame，执行自定义的表达式来计算变量
+def ff_customized_var(df, kwargs):
+    # 取得入参
+    expression = kwargs.get("expression")
+
+    dict_result_dic = dict()
+    df_customized_var = eval(expression)
+
+    return (dict_result_dic, df_customized_var)

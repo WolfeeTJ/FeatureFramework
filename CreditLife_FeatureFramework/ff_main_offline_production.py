@@ -10,7 +10,7 @@ import numpy as np
 import ast
 
 
-def ff_offline_production(in_datasource_name, in_data_dic_name, in_key_column_name):
+def ff_main_offline_production(in_datasource_name, in_data_dic_name, in_key_column_name):
 
     # 读取配置信息和元数据、数据文件
     def conv_func(x):
@@ -31,6 +31,8 @@ def ff_offline_production(in_datasource_name, in_data_dic_name, in_key_column_na
         func_to_call = eval(configfile.iloc[i]["module"])
         if configfile.iloc[i]["module"] == "ff_combination_pct":
             dic_dummy, df_filter[configfile.iloc[i]["var_name"]] = func_to_call(df_filter, configfile.iloc[i])
+        elif configfile.iloc[i]["module"] == "ff_customized_var":
+            dic_dummy, df_result[configfile.iloc[i]["var_name"]] = func_to_call(df_result, configfile.iloc[i])
         else:
             dic_dummy, df_result[configfile.iloc[i]["var_name"]] = func_to_call(df_filter, configfile.iloc[i])
 

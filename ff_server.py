@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import datetime
 from concurrent.futures import ThreadPoolExecutor
 import requests
@@ -16,10 +18,10 @@ def log_cur_time(in_str=None):
 def process_request_and_callback(in_body_json, in_callback_url):
     # feature framework processing here
     dic_result = ff.process_online_vars(in_body_json)
-
+    # call back Credit System Var to send Generation results
     response = requests.get(in_callback_url, data=dic_result)
     # print(response.content.decode())
-    log_cur_time(in_body_json)
+    # log_cur_time(in_body_json)
     log_cur_time(response.status_code)
 
 

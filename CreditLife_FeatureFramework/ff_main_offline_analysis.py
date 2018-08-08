@@ -66,7 +66,7 @@ def log_cur_time(in_str=None):
     print(nowTime + " " + in_str)
 
 
-def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_start_month, in_end_month, in_where):
+def ff_main_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_start_month, in_end_month, in_where):
     in_dataframe = pd.read_table("data/" + in_datasource_name + ".txt")
 
     # 1.指定时间周期（输入项1）（1）最近N个周期内
@@ -258,28 +258,3 @@ def ff_offline_analysis(in_datasource_name, in_key_column, in_month_column, in_s
 
     return (dic_result, df_result)
 
-
-def ff_offline_production(in_datasource_name, in_data_dic_name, in_key_column_name):
-    # 读取配置信息和元数据、数据文件
-    def conv_func(x):
-        if x is None or x == "":
-            return np.nan
-        else:
-            return ast.literal_eval(x)
-
-    configfile = pd.read_csv("data/" + in_data_dic_name, converters={"denominator": conv_func, "numerator": conv_func})
-
-    df_filter = pd.read_table("data/" + in_datasource_name + ".txt")
-
-    df_result = df_filter[in_key_column_name].drop_duplicates().to_frame()
-    df_result.index = df_result[in_key_column_name]
-
-    for i in range(1, len(configfile)):
-        print("processing " + str(configfile.iloc[i]))
-        func_to_call = eval(configfile.iloc[i]["module"])
-        if configfile.iloc[i]["module"] == "ff_combination_pct":
-            dic_dummy, df_filter[configfile.iloc[i]["var_name"]] = func_to_call(df_filter, configfile.iloc[i])
-        else:
-            dic_dummy, df_result[configfile.iloc[i]["var_name"]] = func_to_call(df_filter, configfile.iloc[i])
-
-    return df_result
