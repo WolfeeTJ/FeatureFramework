@@ -5,7 +5,6 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from flask import Flask
 from flask import request
-import CreditLife_FeatureFramework.ff_main_online_production as ff
 import CreditLife_Process.ff_online_production_var_generate as ff_process
 
 executor = ThreadPoolExecutor(10)
@@ -18,13 +17,18 @@ def log_cur_time(in_str=None):
 
 def process_request_and_callback(in_body_json, in_callback_url):
     # feature framework processing here
-    dic_result = ff.ff_online_process(in_body_json)
-    # call back Credit System Var to send Generation results
-    response = requests.get(in_callback_url, data=dic_result)
-    # print(response.content.decode())
-    # log_cur_time(in_body_json)
-    log_cur_time(response.status_code)
+    dic_result = ff_process.ff_online_process(in_body_json)
+    log_cur_time(dic_result)
 
+    try:
+        # call back Credit System Var to send Generation results
+        response = requests.get(in_callback_url, data=dic_result.to_dict())
+        # print(response.content.decode())
+        # log_cur_time(in_body_json)
+        log_cur_time("Callback status: " + in_callback_url + " : " + response.status_code)
+    except Exception as e:
+        print("Exception calling callback URL: ", in_callback_url)
+        print(e)
 
 app = Flask(__name__)
 

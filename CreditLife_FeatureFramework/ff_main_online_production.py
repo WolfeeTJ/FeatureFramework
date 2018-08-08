@@ -42,16 +42,13 @@ def process_online_vars(in_body_json, dic_config):
             # print("processing " + str(configfile.iloc[i]))
             func_to_call = eval(dicconfig.iloc[i]["module"])
             if dicconfig.iloc[i]["module"] == "ff_combination_pct":
-                print("calling ff_combination_pct")
                 dic_dummy, df_json_dataframe[dicconfig.iloc[i]["var_name"]] = func_to_call(df_json_dataframe, dicconfig.iloc[i])
             elif dicconfig.iloc[i]["module"] == "ff_customized_var":
-                print("calling ff_customized_var")
                 dic_dummy, df_result[dicconfig.iloc[i]["var_name"]] = func_to_call(df_result, dicconfig.iloc[i])
             else:
                 if dicconfig.iloc[i]["module"] in list_single_number_funcs:
                     df_json_dataframe[dicconfig.iloc[i]["value_column"]] = df_json_dataframe[
                         dicconfig.iloc[i]["value_column"]].astype(float)
-                print("calling " + dicconfig.iloc[i]["module"])
                 dic_dummy, df_result[dicconfig.iloc[i]["var_name"]] = func_to_call(df_json_dataframe, dicconfig.iloc[i])
 
         return df_result
