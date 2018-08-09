@@ -175,7 +175,7 @@ def ff_common_stat(in_dataframe, kwargs):
             return x[x.isna()].size / x.size
 
     dict_result_dic = dict()
-    if not np.isnan(in_time_interval_column) and not np.isnan(base_month) and not np.isnan(in_N_month):
+    if not type(in_time_interval_column) in [np.float, np.float64]:
         cond_filter_months = in_time_interval_column + " <= " + str(
             base_month) + " and " + in_time_interval_column + " >= " + str(
             base_month - in_N_month + 1)
@@ -195,7 +195,7 @@ def ff_common_stat(in_dataframe, kwargs):
                 "key_column": in_key_column_name,
                 "month_column": in_time_interval_column,
                 "value_column": value_column,
-                "base_month": str(base_month),
+                # "base_month": str(base_month),
                 "N_Months": str(in_N_month),
                 "func_name": func_name}
             agg_funcs += [("var_" + str(i_dict_key_id), eval(func_name))]
@@ -206,6 +206,25 @@ def ff_common_stat(in_dataframe, kwargs):
     df_result = in_df_N_months.groupby(in_key_column_name)[value_column].agg(agg_funcs)
 
     return (dict_result_dic, df_result)
+
+# 针对month_start至month_end，分布进行基础统计，并输出合并后含月份的数据集
+def ff_common_stat_rolling(in_dataframe, kwargs):
+    # 取得入参
+    in_month_start = kwargs.get("month_start")
+    in_month_end = kwargs.get("month_end")
+    in_time_interval_column = kwargs.get("month_column")
+
+    df_result = pd.DataFrame([])
+    dict_result_dic = {}
+
+    for m in range(in_month_start, in_month_end +1):
+        kwargs["base_month"] = m
+        dict_result_dic, df_tmp = ff_common_stat(in_dataframe, kwargs)
+        df_tmp[in_time_interval_column] = m
+        df_result = df_result.append(df_tmp)
+
+    return (dict_result_dic, df_result)
+
 
 
 # 各时段前后段环比统计
@@ -301,7 +320,7 @@ def ff_period_compare_stat(in_dataframe, kwargs):
                     "key_column": in_key_column_name,
                     "month_column": in_time_interval_column,
                     "value_column": value_column,
-                    "base_month": str(base_month),
+                    # "base_month": str(base_month),
                     "N_Months": str(in_N_month),
                     "func_name": func_name,
                     "numerator_months": month_item[0],
@@ -353,7 +372,7 @@ def ff_period_compare_stat(in_dataframe, kwargs):
                         "key_column": in_key_column_name,
                         "month_column": in_time_interval_column,
                         "value_column": value_column,
-                        "base_month": str(base_month),
+                        # "base_month": str(base_month),
                         "N_Months": str(in_N_month),
                         "func_name": func_name,
                         "numerator_months": str(minus_2nd_months),
@@ -406,7 +425,7 @@ def ff_continue_gt_N(in_dataframe, kwargs):
         "key_column": in_key_column_name,
         "month_column": in_time_interval_column,
         "value_column": value_column,
-        "base_month": str(base_month),
+        # "base_month": str(base_month),
         "N_Months": str(in_N_month),
         "threshold_value": str(threshold_value)}})
     return (dic_result, df_result_continues_gt_N)
@@ -457,7 +476,7 @@ def ff_continue_inc_gt_N(in_dataframe, kwargs):
         "key_column": in_key_column_name,
         "month_column": in_time_interval_column,
         "value_column": value_column,
-        "base_month": str(base_month),
+        # "base_month": str(base_month),
         "N_Months": str(in_N_month),
         "threshold_value": str(threshold_value)}})
     return (dic_result, df_result_continues_gt_N_inc)
@@ -501,7 +520,7 @@ def ff_bin_distribution_by_loc(in_dataframe, kwargs):
                 "key_column": in_key_column_name,
                 "month_column": in_time_interval_column,
                 "value_column": value_column,
-                "base_month": str(base_month),
+                # "base_month": str(base_month),
                 "N_Months": str(in_N_month),
                 "number_of_bins": str(number_of_bins),
                 "bin_value": k}
@@ -551,7 +570,7 @@ def ff_bin_distribution_by_val(in_dataframe, kwargs):
                 "key_column": in_key_column_name,
                 "month_column": in_time_interval_column,
                 "value_column": value_column,
-                "base_month": str(base_month),
+                # "base_month": str(base_month),
                 "N_Months": str(in_N_month),
                 "number_of_bins": str(number_of_bins),
                 "bin_value": k}
@@ -598,7 +617,7 @@ def ff_category_cnt_pct(in_dataframe, kwargs):
                 "module": "ff_category_cnt_pct",
                 "key_column": in_key_column_name,
                 "month_column": in_time_interval_column,
-                "base_month": str(base_month),
+                # "base_month": str(base_month),
                 "value_column": value_column,
                 "func_name": "cnt",
                 "N_Months": str(in_N_month),
@@ -611,7 +630,7 @@ def ff_category_cnt_pct(in_dataframe, kwargs):
                 "module": "ff_category_cnt_pct",
                 "key_column": in_key_column_name,
                 "month_column": in_time_interval_column,
-                "base_month": str(base_month),
+                # "base_month": str(base_month),
                 "value_column": value_column,
                 "func_name": "pct",
                 "N_Months": str(in_N_month),

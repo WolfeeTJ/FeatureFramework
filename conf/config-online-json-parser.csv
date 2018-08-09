@@ -1,4 +1,2 @@
 workflow_step,dataframe_json_path,data_dic_name,key_json_path,key_column_name
 201,$.data[*],dic-online-json-court-history,$.seqNo,seqNo
-201,$.data[*],dic-online-json-court-history,$.seqNo,seqNo
-201,$.data[*],dic-online-json-court-history,$.seqNo,seqNo
