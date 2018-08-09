@@ -387,6 +387,24 @@ def ff_period_compare_stat(in_dataframe, kwargs):
 
     return dict_result_dic, df_result_agg
 
+# 各时段前后段环比统计
+def ff_period_compare_stat_rolling(in_dataframe, kwargs):
+    # 取得入参
+    in_month_start = kwargs.get("month_start")
+    in_month_end = kwargs.get("month_end")
+    in_time_interval_column = kwargs.get("month_column")
+
+    df_result = pd.DataFrame([])
+    dict_result_dic = {}
+
+    for m in range(in_month_start, in_month_end +1):
+        kwargs["base_month"] = m
+        dict_result_dic, df_tmp = ff_period_compare_stat(in_dataframe, kwargs)
+        df_tmp[in_time_interval_column] = m
+        df_result = df_result.append(df_tmp)
+
+    return (dict_result_dic, df_result)
+
 
 # 大于N连续出现最大次数
 def ff_continue_gt_N(in_dataframe, kwargs):
@@ -419,7 +437,7 @@ def ff_continue_gt_N(in_dataframe, kwargs):
     # 若将Y/N都统计，则将起加入groupby
     # dfjoin.groupby(["customer","gt_N"])["not_eq_cum"].value_counts()[df_value_count.index.get_level_values(1)==True].groupby(level=0).max()
     df_result_continues_gt_N = dfjoin.query("gt_N == True").groupby(in_key_column_name)[
-        "continue_gt_cum"].value_counts().groupby(level=0).max()
+        "continue_gt_cum"].value_counts().groupby(level=0).agg([("var_" + str(in_dic_start_id), np.max)])
     dic_result = dict({in_dic_start_id: {
         "module": "ff_continue_gt_N",
         "key_column": in_key_column_name,
@@ -429,6 +447,23 @@ def ff_continue_gt_N(in_dataframe, kwargs):
         "N_Months": str(in_N_month),
         "threshold_value": str(threshold_value)}})
     return (dic_result, df_result_continues_gt_N)
+
+def ff_continue_gt_N_rolling(in_dataframe, kwargs):
+    # 取得入参
+    in_month_start = kwargs.get("month_start")
+    in_month_end = kwargs.get("month_end")
+    in_time_interval_column = kwargs.get("month_column")
+
+    df_result = pd.DataFrame([])
+    dict_result_dic = {}
+
+    for m in range(in_month_start, in_month_end +1):
+        kwargs["base_month"] = m
+        dict_result_dic, df_tmp = ff_continue_gt_N(in_dataframe, kwargs)
+        df_tmp[in_time_interval_column] = m
+        df_result = df_result.append(df_tmp)
+
+    return (dict_result_dic, df_result)
 
 
 # 连续增加，且大于N，最大次数
@@ -468,7 +503,7 @@ def ff_continue_inc_gt_N(in_dataframe, kwargs):
     dfjoin["continue_inc_cum"] = dfjoin.groupby(in_key_column_name)["continue_inc"].cumsum()
 
     df_result_continues_gt_N_inc = dfjoin.query("gt_N == True").groupby(in_key_column_name)[
-        "continue_inc_cum"].value_counts().groupby(level=0).max()
+        "continue_inc_cum"].value_counts().groupby(level=0).agg([("var_" + str(in_dic_start_id), np.max)])
     df_key = in_dataframe[in_key_column_name].drop_duplicates().sort_values()
     df_result_continues_gt_N_inc = df_result_continues_gt_N_inc.reindex(df_key).fillna(0).astype(int)
     dic_result = dict({in_dic_start_id: {
@@ -480,6 +515,23 @@ def ff_continue_inc_gt_N(in_dataframe, kwargs):
         "N_Months": str(in_N_month),
         "threshold_value": str(threshold_value)}})
     return (dic_result, df_result_continues_gt_N_inc)
+
+def ff_continue_inc_gt_N_rolling(in_dataframe, kwargs):
+    # 取得入参
+    in_month_start = kwargs.get("month_start")
+    in_month_end = kwargs.get("month_end")
+    in_time_interval_column = kwargs.get("month_column")
+
+    df_result = pd.DataFrame([])
+    dict_result_dic = {}
+
+    for m in range(in_month_start, in_month_end +1):
+        kwargs["base_month"] = m
+        dict_result_dic, df_tmp = ff_continue_inc_gt_N(in_dataframe, kwargs)
+        df_tmp[in_time_interval_column] = m
+        df_result = df_result.append(df_tmp)
+
+    return (dict_result_dic, df_result)
 
 
 # 按给定data frame，以数量分段，统计各key在分段内的比例
@@ -533,6 +585,22 @@ def ff_bin_distribution_by_loc(in_dataframe, kwargs):
 
     return (dict_result_dic, df_result_bin_loc)
 
+def ff_bin_distribution_by_loc_rolling(in_dataframe, kwargs):
+    # 取得入参
+    in_month_start = kwargs.get("month_start")
+    in_month_end = kwargs.get("month_end")
+    in_time_interval_column = kwargs.get("month_column")
+
+    df_result = pd.DataFrame([])
+    dict_result_dic = {}
+
+    for m in range(in_month_start, in_month_end +1):
+        kwargs["base_month"] = m
+        dict_result_dic, df_tmp = ff_bin_distribution_by_loc(in_dataframe, kwargs)
+        df_tmp[in_time_interval_column] = m
+        df_result = df_result.append(df_tmp)
+
+    return (dict_result_dic, df_result)
 
 # 按给定data frame，以max - min分段，统计各key在分段内的比例
 def ff_bin_distribution_by_val(in_dataframe, kwargs):
@@ -566,7 +634,7 @@ def ff_bin_distribution_by_val(in_dataframe, kwargs):
         agg_func_list = []
         for k in agg_funcs.keys():
             dict_result_dic[i_dict_key_id] = {
-                "module": "ff_bin_distribution_by_loc",
+                "module": "ff_bin_distribution_by_val",
                 "key_column": in_key_column_name,
                 "month_column": in_time_interval_column,
                 "value_column": value_column,
@@ -583,6 +651,22 @@ def ff_bin_distribution_by_val(in_dataframe, kwargs):
 
     return (dict_result_dic, df_result_bin_val)
 
+def ff_bin_distribution_by_val_rolling(in_dataframe, kwargs):
+    # 取得入参
+    in_month_start = kwargs.get("month_start")
+    in_month_end = kwargs.get("month_end")
+    in_time_interval_column = kwargs.get("month_column")
+
+    df_result = pd.DataFrame([])
+    dict_result_dic = {}
+
+    for m in range(in_month_start, in_month_end +1):
+        kwargs["base_month"] = m
+        dict_result_dic, df_tmp = ff_bin_distribution_by_val(in_dataframe, kwargs)
+        df_tmp[in_time_interval_column] = m
+        df_result = df_result.append(df_tmp)
+
+    return (dict_result_dic, df_result)
 
 # 对于字符型字段，统计各值出现的数量和比例
 def ff_category_cnt_pct(in_dataframe, kwargs):
@@ -645,6 +729,23 @@ def ff_category_cnt_pct(in_dataframe, kwargs):
         columns=list(set(pd_dummy_result.columns.values) - set([in_key_column_name])))
 
     return (dict_result_dic, pd_dummy_result)
+
+def ff_category_cnt_pct_rolling(in_dataframe, kwargs):
+    # 取得入参
+    in_month_start = kwargs.get("month_start")
+    in_month_end = kwargs.get("month_end")
+    in_time_interval_column = kwargs.get("month_column")
+
+    df_result = pd.DataFrame([])
+    dict_result_dic = {}
+
+    for m in range(in_month_start, in_month_end +1):
+        kwargs["base_month"] = m
+        dict_result_dic, df_tmp = ff_category_cnt_pct(in_dataframe, kwargs)
+        df_tmp[in_time_interval_column] = m
+        df_result = df_result.append(df_tmp)
+
+    return (dict_result_dic, df_result)
 
 
 # 给定聚合后的data frame，执行自定义的表达式来计算变量
