@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 from flask import Flask
 from flask import request
-import CreditLife_Process.ff_online_production_var_generate as ff_process
+import ff_online_production_var_generate as ff_process
 import json
 executor = ThreadPoolExecutor(10)
 

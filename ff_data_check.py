@@ -5,13 +5,13 @@ Created on Fri Jul 13 15:17:54 2018
 @author: Guang Du
 """
 
-import CreditLife_FeatureFramework.ff_main as ff
+import CreditLife_FeatureFramework.ff_main_checkfile as ff
 import pandas as pd
 
 # 读取配置信息和元数据、数据文件
-configfile = pd.read_table("config.txt")
+configfile = pd.read_table("conf/config.txt")
 configfile
-metafile = pd.read_table("meta.txt")
+metafile = pd.read_table("conf/meta.txt")
 metafile
 
 df_month_str_stat = pd.DataFrame([])

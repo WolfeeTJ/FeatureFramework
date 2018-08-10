@@ -10,7 +10,7 @@ import numpy as np
 import ast
 
 
-def ff_main_offline_production(in_datasource_name, in_data_dic_name, in_key_column_name):
+def ff_main_offline_production(in_datasource_name, in_data_dic_name, in_key_column_name, in_base_month):
 
     # 读取配置信息和元数据、数据文件
     def conv_func(x):
@@ -20,6 +20,7 @@ def ff_main_offline_production(in_datasource_name, in_data_dic_name, in_key_colu
             return ast.literal_eval(x)
 
     configfile = pd.read_csv("data/" + in_data_dic_name, converters={"denominator": conv_func, "numerator": conv_func})
+    configfile["base_month"] = in_base_month
 
     df_filter = pd.read_table("data/" + in_datasource_name + ".txt")
 

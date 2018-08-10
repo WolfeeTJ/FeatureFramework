@@ -18,6 +18,9 @@ def ff_online_process(in_json_obj):
         raise Exception("Error parsing workflow step")
     workflow_step = list_workflow_step[0]
 
+    # TODO: 从json文件中推断base month？从配置文件读取base month？审批传进base month？
+    base_month=12
+
     configfile_filtered=configfile.query("workflow_step == " + workflow_step)
 
     key_str = jsonpath.jsonpath(in_json_obj, configfile_filtered.iloc[0]["key_json_path"])[0]
@@ -27,7 +30,7 @@ def ff_online_process(in_json_obj):
 
     for i in range(0, len(configfile_filtered)):
         dic_config = configfile_filtered.iloc[i].to_dict()
-        df_result_tmp = ff.process_online_vars(in_json_obj, dic_config)
+        df_result_tmp = ff.process_online_vars(in_json_obj, dic_config, base_month)
         df_result = df_result.merge(df_result_tmp, left_on=key_column_name, right_on=dic_config["key_column_name"])
 
     return df_result

@@ -16,11 +16,13 @@ def is_number(s):
     except ValueError:
         return False
 
-def process_online_vars(in_body_json, dic_config):
+def process_online_vars(in_body_json, dic_config, in_base_month):
     try:
 
         dicconfigname = dic_config["data_dic_name"]
         dicconfig = pd.read_csv("conf/" + dicconfigname + ".dic")
+
+        dicconfig["base_month"] = in_base_month
 
         dataframe_json_path_str=dic_config["dataframe_json_path"]
         json_datanode = jsonpath.jsonpath(in_body_json, dataframe_json_path_str)
