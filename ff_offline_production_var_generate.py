@@ -9,7 +9,7 @@ import CreditLife_FeatureFramework.ff_main_offline_production as ff
 import pandas as pd
 
 
-#由于离线分析生成的数据字典中仅保存 最近几个月 信息，不保存base month，所以对于最外层流程来说，需要传base month进入流程
+#TODO: 由于离线分析生成的数据字典中仅保存 最近几个月 信息，不保存base month，所以对于最外层流程来说，需要传base month进入流程
 base_month=12
 
 # 读取配置信息和元数据、数据文件
