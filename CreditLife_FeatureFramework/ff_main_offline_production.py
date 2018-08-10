@@ -26,6 +26,7 @@ def ff_main_offline_production(in_datasource_name, in_data_dic_name, in_key_colu
 
     df_result = df_filter[in_key_column_name].drop_duplicates().to_frame()
     df_result.index = df_result[in_key_column_name]
+    df_result["base_month"]=in_base_month
 
     for i in range(1, len(configfile)):
         # print("processing " + str(configfile.iloc[i]))

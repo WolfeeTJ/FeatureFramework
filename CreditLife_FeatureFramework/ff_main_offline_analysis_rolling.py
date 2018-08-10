@@ -16,7 +16,8 @@ def log_cur_time(in_str=None):
     print(nowTime + " " + in_str)
 
 
-def ff_main_offline_analysis_rolling(in_datasource_name, in_key_column, in_month_column, in_start_month, in_end_month, in_where):
+def ff_main_offline_analysis_rolling(in_datasource_name, in_key_column, in_month_column, in_start_month, in_end_month,
+                                     in_where):
     in_dataframe = pd.read_table("data/" + in_datasource_name + ".txt")
 
     # 1.指定时间周期（输入项1）（1）最近N个周期内
@@ -39,7 +40,7 @@ def ff_main_offline_analysis_rolling(in_datasource_name, in_key_column, in_month
     log_cur_time("百分比衍生")
 
     dic_start_id = 1
-    dic_result = {0:{"module":"placeholder"}}
+    dic_result = {0: {"module": "placeholder"}}
     df_result_var_pct = df_filter.copy()
     for i_df_conf_pct in range(0, len(df_conf_pct)):
         var_combinations = df_conf_pct.iloc[i_df_conf_pct]["var_combinations"]
@@ -140,7 +141,6 @@ def ff_main_offline_analysis_rolling(in_datasource_name, in_key_column, in_month
     print(dic_result)
     print(df_result)
 
-
     log_cur_time("分段分布")
     df_conf_var_gen_bin_stat = conf_var_gen_bin_stat.query("datasource == '" + in_datasource_name + "'")
     for i_df_conf_var_gen_bin_stat in range(0, len(df_conf_var_gen_bin_stat)):
@@ -165,7 +165,8 @@ def ff_main_offline_analysis_rolling(in_datasource_name, in_key_column, in_month
                 dic_start_id = max(dic_result.keys()) + 1
                 dic_func_pars["in_dic_start_id"] = dic_start_id
                 dic_func_pars["number_of_bins"] = bin_by_loc
-                dic_result_bin, df_result_bin_loc = ff.ff_bin_distribution_by_loc_rolling(df_result_var_pct, dic_func_pars)
+                dic_result_bin, df_result_bin_loc = ff.ff_bin_distribution_by_loc_rolling(df_result_var_pct,
+                                                                                          dic_func_pars)
                 df_result = df_result.merge(df_result_bin_loc, how="outer", on=[in_key_column, in_month_column],
                                             validate="one_to_one")
                 dic_result.update(dic_result_bin)
@@ -173,7 +174,8 @@ def ff_main_offline_analysis_rolling(in_datasource_name, in_key_column, in_month
                 dic_start_id = max(dic_result.keys()) + 1
                 dic_func_pars["in_dic_start_id"] = dic_start_id
                 dic_func_pars["number_of_bins"] = bin_by_val
-                dic_result_bin, df_result_bin_val = ff.ff_bin_distribution_by_val_rolling(df_result_var_pct, dic_func_pars)
+                dic_result_bin, df_result_bin_val = ff.ff_bin_distribution_by_val_rolling(df_result_var_pct,
+                                                                                          dic_func_pars)
                 df_result = df_result.merge(df_result_bin_val, how="outer", on=[in_key_column, in_month_column],
                                             validate="one_to_one")
                 dic_result.update(dic_result_bin)
@@ -201,7 +203,8 @@ def ff_main_offline_analysis_rolling(in_datasource_name, in_key_column, in_month
             dic_func_pars["N_Months"] = var_month
             dic_func_pars["in_dic_start_id"] = dic_start_id
             dic_result_dummy, df_result_dummy = ff.ff_category_cnt_pct_rolling(df_result_var_pct, dic_func_pars)
-            df_result = df_result.merge(df_result_dummy, how="left", left_index=True, right_index=True)
+            df_result = df_result.merge(df_result_dummy, how="outer", on=[in_key_column, in_month_column],
+                                        validate="one_to_one")
             dic_result.update(dic_result_dummy)
     log_cur_time("字符分布 结果")
     print(dic_result)
@@ -211,4 +214,3 @@ def ff_main_offline_analysis_rolling(in_datasource_name, in_key_column, in_month
     print(df_result)
 
     return (dic_result, df_result)
-
