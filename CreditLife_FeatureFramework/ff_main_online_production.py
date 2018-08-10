@@ -16,7 +16,7 @@ def is_number(s):
     except ValueError:
         return False
 
-def process_online_vars(in_body_json, dic_config, in_base_month):
+def ff_main_online_production(in_body_json, dic_config, in_base_month):
     try:
 
         dicconfigname = dic_config["data_dic_name"]

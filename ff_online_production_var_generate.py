@@ -30,7 +30,7 @@ def ff_online_process(in_json_obj):
 
     for i in range(0, len(configfile_filtered)):
         dic_config = configfile_filtered.iloc[i].to_dict()
-        df_result_tmp = ff.process_online_vars(in_json_obj, dic_config, base_month)
+        df_result_tmp = ff.ff_main_online_production(in_json_obj, dic_config, base_month)
         df_result = df_result.merge(df_result_tmp, left_on=key_column_name, right_on=dic_config["key_column_name"])
 
     return df_result
