@@ -5,7 +5,7 @@ Created on Fri Jul 13 15:17:54 2018
 @author: Guang Du
 """
 
-import CreditLife_FeatureFramework.ff_main_online_production as ff
+import FeatureFrameworkLib.ff_main_online_production as ff
 import pandas as pd
 import jsonpath
 import json

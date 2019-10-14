@@ -7,7 +7,7 @@ Created on Fri Jul 13 15:17:54 2018
 import json
 import jsonpath
 import pandas as pd
-from CreditLife_FeatureFramework.ff_funcs import *
+from FeatureFrameworkLib.ff_funcs import *
 
 def is_number(s):
     try:

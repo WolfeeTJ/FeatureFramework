@@ -4,7 +4,7 @@ Created on Tue Jul  3 15:44:42 2018
 
 @author: Guang Du
 """
-import CreditLife_FeatureFramework.ff_funcs as ff
+import FeatureFrameworkLib.ff_funcs as ff
 import pandas as pd
 import numpy as np
 import datetime
